@@ -20,6 +20,8 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     scribbling = false;
     myPenWidth = 1;
     myPenColor = Qt::blue;
+    lineMode = true; // test
+    nNodes = 2;
 }
 
 // Used to load the image and place it in the widget
@@ -76,14 +78,40 @@ void ScribbleArea::clearImage()
     update();
 }
 
+void ScribbleArea::print()
+{
+}
+
 // If a mouse button is pressed check if it was the
 // left button and if so store the current position
 // Set that we are currently drawing
 void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton) {
-        lastPoint = event->pos();
-        scribbling = true;
+    if (lineMode)
+    {
+        if (event->button() == Qt::LeftButton)
+        {
+            switch (nNodes)
+            {
+            case 2: {point1 = event->pos(); nNodes--; break; }
+            case 1: {point2 = event->pos(); nNodes--; break; }
+            default:
+                break;
+            }
+        }
+        if (nNodes == 0)
+        {
+            nNodes = 2;
+            drawLineBetween(point1, point2);
+        }
+    
+    } 
+    else
+    {
+        if (event->button() == Qt::LeftButton) {
+            lastPoint = event->pos();
+            scribbling = true;
+        }
     }
 }
 
@@ -92,16 +120,24 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
-    if ((event->buttons() & Qt::LeftButton) && scribbling)
-        drawLineTo(event->pos());
+    if (lineMode) {}
+    else 
+    {
+        if ((event->buttons() & Qt::LeftButton) && scribbling)
+            drawLineTo(event->pos());
+    }
 }
 
 // If the button is released we set variables to stop drawing
 void ScribbleArea::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton && scribbling) {
-        drawLineTo(event->pos());
-        scribbling = false;
+    if (lineMode) {}
+    else
+    {
+        if (event->button() == Qt::LeftButton && scribbling) {
+            drawLineTo(event->pos());
+            scribbling = false;
+        }
     }
 }
 
@@ -133,18 +169,19 @@ void ScribbleArea::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
 }
 
-void ScribbleArea::drawCylTo(const QPoint& point, qreal WIDTH = 10)
+void ScribbleArea::drawCylTo(QPoint &point, qreal WIDTH = 10)
 {
     QPainter painter(&image);
     painter.setPen(QPen(myPenColor, WIDTH, Qt::SolidLine, Qt::RoundCap,
         Qt::RoundJoin));
-    painter.drawRoundRect(10,10,10,10);
+    QPoint m_point = point;
+
+    painter.drawRoundRect(QRect(point,point+point),50,50);
     //painter.drawRoundRect()
     int rad = (myPenWidth / 2) + 2;
 
     // Call to update the rectangular space where we drew
-    update(QRect(lastPoint, point).normalized()
-        .adjusted(-rad, -rad, +rad, +rad));
+    update();
 }
 
 void ScribbleArea::drawLineTo(const QPoint& endPoint)
@@ -172,6 +209,31 @@ void ScribbleArea::drawLineTo(const QPoint& endPoint)
     lastPoint = endPoint;
 }
 
+void ScribbleArea::drawLineBetween(const QPoint& startPoint, const QPoint& endPoint)
+{
+    // Used to draw on the widget
+    QPainter painter(&image);
+
+    // Set the current settings for the pen
+    painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+        Qt::RoundJoin));
+
+    // Draw a line from the last registered point to the current
+    painter.drawLine(startPoint, endPoint);
+
+    // Set that the image hasn't been saved
+    modified = true;
+
+    int rad = (myPenWidth / 2) + 2;
+
+    // Call to update the rectangular space where we drew
+    update(QRect(startPoint, endPoint).normalized()
+        .adjusted(-rad, -rad, +rad, +rad));
+
+    // Update the last position where we left off drawing
+    lastPoint = endPoint;
+}
+
 // When the app is resized create a new image using
 // the changes made to the image
 void ScribbleArea::resizeImage(QImage* image, const QSize& newSize)
@@ -190,9 +252,3 @@ void ScribbleArea::resizeImage(QImage* image, const QSize& newSize)
     *image = newImage;
 }
 
-// Print the image
-void ScribbleArea::print()
-{
-    // Check for print dialog availability
-
-}

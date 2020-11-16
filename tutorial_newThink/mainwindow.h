@@ -6,8 +6,21 @@
 #include <qpushbutton.h>
 #include "scribblearea.h"
 
-// ScribbleArea used to paint the image
-class ScribbleArea;
+
+
+QT_BEGIN_NAMESPACE
+class QAction;
+class QMenu;
+class QPlainTextEdit;
+class QSessionManager;
+
+class QCheckBox;
+class QComboBox;
+class QGroupBox;
+class QLabel;
+class QSpinBox;
+class QStackedWidget;
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -34,7 +47,16 @@ private slots:
 private:
 
     QPushButton* testBut;
+
+    QPushButton* test2But;
+
+    QSpinBox* testQSB;
+
+    QPushButton* clearBut;
+
     void testColorBut();
+
+    void testColorBut2();
 
     // Will tie user actions to functions
     void createActions();

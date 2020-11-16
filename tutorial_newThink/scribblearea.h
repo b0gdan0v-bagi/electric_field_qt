@@ -25,8 +25,13 @@ public:
 
     // Has the image been modified since last save
     bool isModified() const { return modified; }
+    bool isScribbling() const { return scribbling; }
     QColor penColor() const { return myPenColor; }
     int penWidth() const { return myPenWidth; }
+
+    bool lineMode;
+    int nNodes;
+    QPoint point1, point2;
 
 public slots:
 
@@ -47,8 +52,9 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 public: // for test
-    void drawCylTo(const QPoint& point, qreal WIDTH);
+    void drawCylTo(QPoint &point, qreal WIDTH);
     void drawLineTo(const QPoint& endPoint);
+    void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint);
 private:
     void resizeImage(QImage* image, const QSize& newSize);
 

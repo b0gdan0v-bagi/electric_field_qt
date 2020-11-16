@@ -9,18 +9,32 @@ MainWindow::MainWindow()
     // Create the ScribbleArea widget and make it
     // the central widget
     QGridLayout* controlsLayout = new QGridLayout(this);
+    clearBut = new QPushButton("Clear", this);
+
     testBut = new QPushButton("TEST", this);
+    test2But = new QPushButton("TEST 2", this);
+    testQSB = new QSpinBox(this);
     
 
     scribbleArea = new ScribbleArea;
-    setCentralWidget(scribbleArea);
+    //setCentralWidget(scribbleArea);
     QWidget* testQW = new QWidget(this);
 
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
+    controlsLayout->addWidget(testBut,0,0);
+    controlsLayout->addWidget(test2But,1,0);
+    controlsLayout->addWidget(testQSB,2,0);
+    controlsLayout->addWidget(clearBut,3,0);
 
     hbox->addWidget(scribbleArea);
-    hbox->addWidget(testBut);
-    connect(testBut, &QPushButton::clicked, this, &MainWindow::testColorBut);
+    hbox->addLayout(controlsLayout);
+    connect(testBut, &QPushButton::clicked, this, [=]() {
+        scribbleArea->isScribbling();
+        });
+    connect(test2But, &QPushButton::clicked, this, [=]() { 
+        scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); });
+
+    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
     
     setCentralWidget(testQW);
     // Create actions and menus
@@ -121,7 +135,21 @@ void MainWindow::about()
         tr("<p>The <b>Scribble</b> example is awesome</p>"));
 }
 
+void MainWindow::testColorBut()
+{
+    scribbleArea->setPenColor(QColor(Qt::GlobalColor::blue));
+    //scribbleArea->drawLineTo(QPoint(50, 50));
+    scribbleArea->drawCylTo(QPoint(50, 50),10);
+}
+void MainWindow::testColorBut2()
+{
+    scribbleArea->setPenColor(QColor(Qt::GlobalColor::blue));
+    //scribbleArea->drawLineTo(QPoint(50, 50));
+    
+    scribbleArea->drawCylTo(QPoint(5* testQSB->value(), 50), 10);
+}
 // Define menu actions that call functions
+
 void MainWindow::createActions()
 {
     // Create the action tied to the menu
@@ -181,13 +209,6 @@ void MainWindow::createActions()
     // Create about Qt action and tie to MainWindow::aboutQt()
     aboutQtAct = new QAction(tr("About &Qt"), this);
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-}
-
-void MainWindow::testColorBut()
-{
-    scribbleArea->setPenColor(QColor(Qt::GlobalColor::blue));
-    //scribbleArea->drawLineTo(QPoint(50, 50));
-    scribbleArea->drawCylTo(QPoint(50, 50),10);
 }
 
 // Create the menubar
