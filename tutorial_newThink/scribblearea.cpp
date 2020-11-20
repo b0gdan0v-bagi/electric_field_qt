@@ -20,7 +20,7 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     scribbling = false;
     myPenWidth = 1;
     myPenColor = Qt::blue;
-    lineMode = true; // test
+    lineMode = false; // test
     nNodes = 2;
 }
 
@@ -95,16 +95,12 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             {
             case 2: {point1 = event->pos(); nNodes--; break; }
             case 1: {point2 = event->pos(); nNodes--; break; }
-            default:
-                break;
+            case 0: {
+                lineMode = false;
+                drawLineBetween(point1, point2);
+            }
             }
         }
-        if (nNodes == 0)
-        {
-            nNodes = 2;
-            drawLineBetween(point1, point2);
-        }
-    
     } 
     else
     {

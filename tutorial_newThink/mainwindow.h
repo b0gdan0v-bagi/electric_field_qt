@@ -5,6 +5,8 @@
 #include <QMainWindow>
 #include <qpushbutton.h>
 #include "scribblearea.h"
+#include "sShape.h"
+//#include "vec2D.h"
 
 
 
@@ -46,12 +48,18 @@ private slots:
 
 private:
 
+    QPoint vec2DtoQPoint(const vd2D& v) { return QPoint(v.x, v.y); }
+
+    QList<sShape*> shapes;
+
+    QLabel* avaliableNodesL;
+    QPushButton* crtLineBut;
+    QPushButton* updateBut;
+    int nNodes;
+
     QPushButton* testBut;
-
     QPushButton* test2But;
-
     QSpinBox* testQSB;
-
     QPushButton* clearBut;
 
     void testColorBut();

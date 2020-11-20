@@ -1,4 +1,7 @@
 #include <QtWidgets>
+#include <QObject>
+#include "qobject.h"
+
 
 #include "mainwindow.h"
 
@@ -6,17 +9,30 @@
 // MainWindow constructor
 MainWindow::MainWindow()
 {
+    scribbleArea = new ScribbleArea;
     // Create the ScribbleArea widget and make it
     // the central widget
     QGridLayout* controlsLayout = new QGridLayout(this);
     clearBut = new QPushButton("Clear", this);
-
     testBut = new QPushButton("TEST", this);
     test2But = new QPushButton("TEST 2", this);
+    updateBut = new QPushButton("Update", this);
+    crtLineBut = new QPushButton("Create line", this);
+    avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
+    //nNodes = &scribbleArea->nNodes;
+    //later - connect label to nNodes in area;
+    //connect(nNodes, &QObject::variableChanged, [=](int i) {
+    //    avaliableNodesL->setText("Number = " + QString::number(i));
+
     testQSB = new QSpinBox(this);
     
+    shapes.push_back(new sLine());
+    shapes.back()->GetNextNode(vf2D(50, 50));
+    shapes.back()->GetNextNode(vf2D(100, 100));
+    testBut->setText(QString::number(shapes.back()->vecNodes.size()));
+    //shapes.back()->vecNodes[0].pos = vf2D(50, 50);
 
-    scribbleArea = new ScribbleArea;
+    
     //setCentralWidget(scribbleArea);
     QWidget* testQW = new QWidget(this);
 
@@ -25,14 +41,25 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(test2But,1,0);
     controlsLayout->addWidget(testQSB,2,0);
     controlsLayout->addWidget(clearBut,3,0);
+    controlsLayout->addWidget(updateBut,4,0);
+    controlsLayout->addWidget(avaliableNodesL,5,0);
+    controlsLayout->addWidget(crtLineBut,6,0);
 
     hbox->addWidget(scribbleArea);
     hbox->addLayout(controlsLayout);
+    connect(crtLineBut, &QPushButton::clicked, this, [=]() {
+        //nNodes = 2;
+        scribbleArea->nNodes = 2;
+        scribbleArea->lineMode = true;
+        });
     connect(testBut, &QPushButton::clicked, this, [=]() {
-        scribbleArea->isScribbling();
+        QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
+        QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
+        scribbleArea->drawLineBetween(p1, p2);
         });
     connect(test2But, &QPushButton::clicked, this, [=]() { 
-        scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); });
+        scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); 
+        });
 
     connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
     
