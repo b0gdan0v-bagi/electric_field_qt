@@ -93,11 +93,14 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         {
             switch (nNodes)
             {
-            case 2: {point1 = event->pos(); nNodes--; break; }
-            case 1: {point2 = event->pos(); nNodes--; break; }
-            case 0: {
+            case 2: {point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
+            case 1: {point2 = event->pos(); drawRectangle(point2); nNodes--; 
                 lineMode = false;
                 drawLineBetween(point1, point2);
+                break; }
+            case 0: {
+               
+                
             }
             }
         }
@@ -173,6 +176,22 @@ void ScribbleArea::drawCylTo(QPoint &point, qreal WIDTH = 10)
     QPoint m_point = point;
 
     painter.drawRoundRect(QRect(point,point+point),50,50);
+    //painter.drawRoundRect()
+    int rad = (myPenWidth / 2) + 2;
+
+    // Call to update the rectangular space where we drew
+    update();
+}
+
+void ScribbleArea::drawRectangle(QPoint& point)
+{
+    QPainter painter(&image);
+    painter.setPen(QPen(Qt::green, 15, Qt::SolidLine, Qt::RoundCap,
+        Qt::RoundJoin));
+    //QPoint m_point = point;
+
+    painter.drawPoint(point);
+    //painter.drawRoundRect(QRect(point, point + point), 50, 50);
     //painter.drawRoundRect()
     int rad = (myPenWidth / 2) + 2;
 

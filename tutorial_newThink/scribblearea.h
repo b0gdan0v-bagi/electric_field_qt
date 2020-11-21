@@ -53,6 +53,7 @@ protected:
 
 public: // for test
     void drawCylTo(QPoint &point, qreal WIDTH);
+    void drawRectangle(QPoint& point);
     void drawLineTo(const QPoint& endPoint);
     void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint);
 private:
