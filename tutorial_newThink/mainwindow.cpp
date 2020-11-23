@@ -18,6 +18,8 @@ MainWindow::MainWindow()
     test2But = new QPushButton("TEST 2", this);
     updateBut = new QPushButton("Update", this);
     crtLineBut = new QPushButton("Create line", this);
+    crtScribbleBut = new QPushButton("Scribble", this);
+    crtSingleBut = new QPushButton("Create 1 point", this);
     avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
     //nNodes = &scribbleArea->nNodes;
     //later - connect label to nNodes in area;
@@ -37,21 +39,23 @@ MainWindow::MainWindow()
     QWidget* testQW = new QWidget(this);
 
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
-    controlsLayout->addWidget(testBut,0,0);
-    controlsLayout->addWidget(test2But,1,0);
-    controlsLayout->addWidget(testQSB,2,0);
-    controlsLayout->addWidget(clearBut,3,0);
-    controlsLayout->addWidget(updateBut,4,0);
-    controlsLayout->addWidget(avaliableNodesL,5,0);
-    controlsLayout->addWidget(crtLineBut,6,0);
+    controlsLayout->addWidget(crtScribbleBut, 0, 0);
+    controlsLayout->addWidget(crtSingleBut, 1, 0);
+    controlsLayout->addWidget(crtLineBut, 2, 0);
+
+    controlsLayout->addWidget(testBut,3,0);
+    controlsLayout->addWidget(test2But,4,0);
+    controlsLayout->addWidget(testQSB,5,0);
+    controlsLayout->addWidget(clearBut,6,0);
+    controlsLayout->addWidget(updateBut,7,0);
+    controlsLayout->addWidget(avaliableNodesL,8,0);
+    
 
     hbox->addWidget(scribbleArea);
     hbox->addLayout(controlsLayout);
-    connect(crtLineBut, &QPushButton::clicked, this, [=]() {
-        //nNodes = 2;
-        scribbleArea->nNodes = 2;
-        scribbleArea->lineMode = true;
-        });
+    connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); });
+    connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); });
+    connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode();});
     connect(testBut, &QPushButton::clicked, this, [=]() {
         QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
         QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);

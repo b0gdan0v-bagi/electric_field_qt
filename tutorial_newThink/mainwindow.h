@@ -54,6 +54,8 @@ private:
 
     QLabel* avaliableNodesL;
     QPushButton* crtLineBut;
+    QPushButton* crtSingleBut;
+    QPushButton* crtScribbleBut;
     QPushButton* updateBut;
     int nNodes;
 

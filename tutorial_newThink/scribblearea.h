@@ -29,9 +29,15 @@ public:
     QColor penColor() const { return myPenColor; }
     int penWidth() const { return myPenWidth; }
 
-    bool lineMode;
+    //bool lineMode;
     int nNodes;
     QPoint point1, point2;
+    enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER } scribblemodes = NONE;
+
+    void setLineMode() { nNodes = 2; scribblemodes = LINE; }
+    void setScribbleMode() {scribblemodes = NONE;}
+    void setSingleMode() {scribblemodes = SINGLE;}
+    void setCylinderMode() {scribblemodes = CYLINDER;}
 
 public slots:
 

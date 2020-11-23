@@ -36,12 +36,18 @@
     <ClCompile Include="sShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mousecoordlabel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="scribblearea.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="mousecoordlabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

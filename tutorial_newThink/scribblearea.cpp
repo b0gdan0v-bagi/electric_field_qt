@@ -20,7 +20,7 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     scribbling = false;
     myPenWidth = 1;
     myPenColor = Qt::blue;
-    lineMode = false; // test
+    scribblemodes = NONE; // test
     nNodes = 2;
 }
 
@@ -87,30 +87,32 @@ void ScribbleArea::print()
 // Set that we are currently drawing
 void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
-    if (lineMode)
+    if (event->button() == Qt::LeftButton) 
     {
-        if (event->button() == Qt::LeftButton)
+        switch (scribblemodes)
         {
-            switch (nNodes)
-            {
-            case 2: {point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
-            case 1: {point2 = event->pos(); drawRectangle(point2); nNodes--; 
-                lineMode = false;
-                drawLineBetween(point1, point2);
-                break; }
-            case 0: {
-               
-                
-            }
-            }
-        }
-    } 
-    else
-    {
-        if (event->button() == Qt::LeftButton) {
+        case ScribbleArea::NONE:
+        {
             lastPoint = event->pos();
             scribbling = true;
+        break;
         }
+    case ScribbleArea::LINE:
+    {
+        switch (nNodes)
+        {
+        case 2: {point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
+        case 1: {point2 = event->pos(); drawRectangle(point2); nNodes++;
+            drawLineBetween(point1, point2);
+            break; }
+        }
+        break;
+    }
+    case ScribbleArea::SINGLE: {drawRectangle(event->pos()); break; }
+    case ScribbleArea::CYLINDER:
+        break;
+    }
+
     }
 }
 
@@ -119,19 +121,14 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
-    if (lineMode) {}
-    else 
-    {
-        if ((event->buttons() & Qt::LeftButton) && scribbling)
-            drawLineTo(event->pos());
-    }
+    if (scribblemodes == NONE)
+        if ((event->buttons() & Qt::LeftButton) && scribbling) drawLineTo(event->pos());
 }
 
 // If the button is released we set variables to stop drawing
 void ScribbleArea::mouseReleaseEvent(QMouseEvent* event)
 {
-    if (lineMode) {}
-    else
+    if (scribblemodes == NONE)
     {
         if (event->button() == Qt::LeftButton && scribbling) {
             drawLineTo(event->pos());
