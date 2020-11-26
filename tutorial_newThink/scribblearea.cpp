@@ -18,6 +18,7 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     // Set defaults for the monitored variables
     modified = false;
     scribbling = false;
+    creatingShape = false;
     myPenWidth = 1;
     myPenColor = Qt::blue;
     scribblemodes = NONE; // test
@@ -78,6 +79,23 @@ void ScribbleArea::clearImage()
     update();
 }
 
+void ScribbleArea::updateShapes()
+{
+    clearImage();
+    for (auto const& sh : shapes)
+    {
+        switch (sh->shapeType)
+        {
+        case 0: {drawRectangle(sh->vecNodes[0].pos); break; }
+        case 1: {
+            for (int i = 0; i < sh->vecNodes.size(); i++) drawRectangle(sh->vecNodes.at(i).pos);
+            // "if" for checking only
+            if (sh->vecNodes.size() > 1) drawLineBetween(sh->vecNodes.at(0).pos, sh->vecNodes.at(1).pos);
+            break; }
+        }
+    }
+}
+
 void ScribbleArea::print()
 {
 }
@@ -87,7 +105,7 @@ void ScribbleArea::print()
 // Set that we are currently drawing
 void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton) 
+    if (event->button() == Qt::LeftButton && creatingShape) 
     {
         switch (scribblemodes)
         {
@@ -95,24 +113,36 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         {
             lastPoint = event->pos();
             scribbling = true;
-        break;
+            //creatingShape = false;
+            break;
         }
-    case ScribbleArea::LINE:
-    {
-        switch (nNodes)
+        case ScribbleArea::LINE:
         {
-        case 2: {point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
-        case 1: {point2 = event->pos(); drawRectangle(point2); nNodes++;
-            drawLineBetween(point1, point2);
-            break; }
+            switch (nNodes)
+            {
+            case 2: { 
+                
+                point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
+            case 1: {
+                point2 = event->pos();
+                //drawRectangle(point2); 
+                nNodes++;
+                shapes.push_back(new sLine(point1, point2));
+                updateShapes();
+                //drawLineBetween(point1, point2);
+                //creatingShape = false;
+                break; }
+            }
+            break;
         }
-        break;
-    }
-    case ScribbleArea::SINGLE: {drawRectangle(event->pos()); break; }
-    case ScribbleArea::CYLINDER:
-        break;
-    }
+        case ScribbleArea::SINGLE: {
+            //drawRectangle(event->pos());
+            shapes.push_back(new sPoint(event->pos()));
+            updateShapes();
+            break; }
+        case ScribbleArea::CYLINDER: break;
 
+        }
     }
 }
 

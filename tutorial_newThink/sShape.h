@@ -2,7 +2,7 @@
 #include "vec2D.h"
 #include <QVector>
 #include <vector>
-
+#include <QWidget>
 #include <cmath>
 
 class sShape;
@@ -11,7 +11,10 @@ class sShape;
 struct sNode
 {
 	sShape* parent;
-	vf2D pos;
+	//vf2D pos;
+	QPoint pos;
+	sNode() {}
+	sNode(sShape* parent_, QPoint pos_) : pos(pos_), parent(parent_) {}
 };
 
 struct sShape
@@ -19,6 +22,8 @@ struct sShape
 	// Shapes are defined by the placment of nodes
 	std::vector<sNode> vecNodes;
 	uint32_t nMaxNodes = 0;
+
+	enum ShapeType {POINT,LINE} shapeType;
 
 	// The colour of the shape
 	//olc::Pixel col = olc::GREEN;
@@ -34,6 +39,7 @@ struct sShape
 		nScreenX = (int)((v.x - vWorldOffset.x) * fWorldScale);
 		nScreenY = (int)((v.y - vWorldOffset.y) * fWorldScale);
 	}
+	void addNode(QPoint POS) { if (vecNodes.size() < nMaxNodes) vecNodes.push_back(sNode(this, POS));}
 
 	// This is a PURE function, which makes this class abstract. A sub-class
 	// of this class must provide an implementation of this function by
@@ -45,7 +51,7 @@ struct sShape
 	// change depending on how many nodes have been placed. Once the
 	// maximum number of nodes for a shape have been placed, it returns
 	// nullptr
-	sNode* GetNextNode(const vf2D& p)
+	/*sNode* GetNextNode(const vf2D& p)
 	{
 		if (vecNodes.size() == nMaxNodes)
 			return nullptr; // Shape is complete so no new nodes to be issued
@@ -72,7 +78,9 @@ struct sShape
 		}
 
 		return nullptr;
-	}
+	}*/
+	//virtual void drawToScribbleArea() = 0;
+
 
 	// Draw all of the nodes that define this shape so far
 	/*void DrawNodes(olc::PixelGameEngine* pge)
@@ -88,16 +96,23 @@ struct sShape
 
 struct sLine : public sShape
 {
-	sLine()
+	sLine(QPoint p1, QPoint p2)
 	{
 		nMaxNodes = 2;
-		vecNodes.reserve(nMaxNodes); // We're gonna be getting pointers to vector elements
+		//vecNodes.reserve(nMaxNodes); // We're gonna be getting pointers to vector elements
 		// though we have defined already how much capacity our vector will have. This makes
 		// it safe to do this as we know the vector will not be maniupulated as we add nodes
 		// to it. Is this bad practice? Possibly, but as with all thing programming, if you
 		// know what you are doing, it's ok :D
-	}
 
+		addNode(p1);
+		addNode(p2);
+		shapeType = LINE;
+	}
+	void drawToScribbleArea()
+	{
+
+	}
 	// Implements custom DrawYourself Function, meaning the shape
 	// is no longer abstract
 	/*void DrawYourself(olc::PixelGameEngine* pge) override
@@ -107,5 +122,17 @@ struct sLine : public sShape
 		WorldToScreen(vecNodes[1].pos, ex, ey);
 		pge->DrawLine(sx, sy, ex, ey, col);
 	}*/
+};
+
+struct sPoint : public sShape
+{
+	sPoint(QPoint POS)
+	{
+		nMaxNodes = 1;
+		//.push_back(sNode(this, POS));
+		addNode(POS);
+		//vecNodes.reserve(nMaxNodes);
+		shapeType = POINT;
+	}
 };
 

@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef CENTRALWIDGET_H
+#define CENTRALWIDGET_H
 
 #include <QList>
 #include <QMainWindow>
@@ -7,9 +7,6 @@
 #include "scribblearea.h"
 #include "sShape.h"
 #include <QListWidget>
-//#include "vec2D.h"
-
-
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -25,27 +22,13 @@ class QSpinBox;
 class QStackedWidget;
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class CentralWidget : public QWidget
 {
-    // Declares our class as a QObject which is the base class
-    // for all Qt objects
-    // QObjects handle events
+
     Q_OBJECT
-
 public:
-    MainWindow();
 
-protected:
-    // Function used to close an event
-    void closeEvent(QCloseEvent* event) override;
-
-    // The events that can be triggered
-private slots:
-    void open();
-    void save();
-    void penColor();
-    void penWidth();
-    void about();
+    CentralWidget(QWidget* parent = 0);
 
 private:
 
@@ -101,6 +84,16 @@ private:
     QAction* clearScreenAct;
     QAction* aboutAct;
     QAction* aboutQtAct;
+
+
+
 };
 
-#endif
+
+
+
+
+
+
+
+#endif // CENTRALWIDGET_H

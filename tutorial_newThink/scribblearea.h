@@ -1,6 +1,6 @@
 #ifndef SCRIBBLEAREA_H
 #define SCRIBBLEAREA_H
-
+#include "sShape.h"
 #include <QColor>
 #include <QImage>
 #include <QPoint>
@@ -33,17 +33,21 @@ public:
     int nNodes;
     QPoint point1, point2;
     enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER } scribblemodes = NONE;
+    QList<sShape*> shapes;
+    bool creatingShape;
+    void updateShapes();
 
-    void setLineMode() { nNodes = 2; scribblemodes = LINE; }
-    void setScribbleMode() {scribblemodes = NONE;}
-    void setSingleMode() {scribblemodes = SINGLE;}
-    void setCylinderMode() {scribblemodes = CYLINDER;}
+    void setLineMode() { nNodes = 2; scribblemodes = LINE; creatingShape = true;}
+    void setScribbleMode() {scribblemodes = NONE; creatingShape = true;}
+    void setSingleMode() {scribblemodes = SINGLE; creatingShape = true;}
+    void setCylinderMode() {scribblemodes = CYLINDER; creatingShape = true;}
 
 public slots:
 
     // Events to handle
     void clearImage();
     void print();
+    
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;

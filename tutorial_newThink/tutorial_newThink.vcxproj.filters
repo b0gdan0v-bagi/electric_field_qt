@@ -39,6 +39,9 @@
     <ClCompile Include="mousecoordlabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="centralWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="scribblearea.h">
@@ -48,6 +51,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="mousecoordlabel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="centralWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

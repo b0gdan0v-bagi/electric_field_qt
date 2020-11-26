@@ -15,6 +15,7 @@
     <QtMoc Include="scribblearea.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="centralWidget.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="mousecoordlabel.cpp" />
@@ -23,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="mousecoordlabel.h" />
+    <QtMoc Include="centralWidget.h" />
     <ClInclude Include="sShape.h" />
     <ClInclude Include="vec2D.h" />
   </ItemGroup>

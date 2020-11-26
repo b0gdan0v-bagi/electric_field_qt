@@ -2,8 +2,8 @@
 
 void MouseCoordLabel::mousePressEvent(QMouseEvent* ev)
 {
-    const QPoint p = ev->pos();
-    emit mousePressed(p);
+    //const QPoint p = ev->pos();
+   // emit mousePressed(p);
 }
 
 MouseCoordLabel::MouseCoordLabel(QWidget* parent, Qt::WindowFlags f)

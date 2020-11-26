@@ -9,7 +9,8 @@
 // MainWindow constructor
 MainWindow::MainWindow()
 {
-    scribbleArea = new ScribbleArea;
+    sListWidget = new QListWidget(this);
+    scribbleArea = new ScribbleArea(this);
     // Create the ScribbleArea widget and make it
     // the central widget
     QGridLayout* controlsLayout = new QGridLayout(this);
@@ -21,6 +22,7 @@ MainWindow::MainWindow()
     crtScribbleBut = new QPushButton("Scribble", this);
     crtSingleBut = new QPushButton("Create 1 point", this);
     avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
+    
     //nNodes = &scribbleArea->nNodes;
     //later - connect label to nNodes in area;
     //connect(nNodes, &QObject::variableChanged, [=](int i) {
@@ -28,17 +30,21 @@ MainWindow::MainWindow()
 
     testQSB = new QSpinBox(this);
     
-    shapes.push_back(new sLine());
-    shapes.back()->GetNextNode(vf2D(50, 50));
-    shapes.back()->GetNextNode(vf2D(100, 100));
-    testBut->setText(QString::number(shapes.back()->vecNodes.size()));
+    //shapes.push_back(new sLine());
+    //shapes.back()->GetNextNode(vf2D(50, 50));
+    //shapes.back()->GetNextNode(vf2D(100, 100));
+    //testBut->setText(QString::number(shapes.back()->vecNodes.size()));
     //shapes.back()->vecNodes[0].pos = vf2D(50, 50);
 
     
     //setCentralWidget(scribbleArea);
-    QWidget* testQW = new QWidget(this);
+    //QWidget* testQW = new QWidget(this);
 
-    QHBoxLayout* hbox = new QHBoxLayout(testQW);
+    //QHBoxLayout* hbox = new QHBoxLayout(testQW);
+    QHBoxLayout* hbox = new QHBoxLayout(this);
+    QVBoxLayout* vbox3 = new QVBoxLayout();
+    QVBoxLayout* vbox1 = new QVBoxLayout();
+    vbox3->addWidget(sListWidget);
     controlsLayout->addWidget(crtScribbleBut, 0, 0);
     controlsLayout->addWidget(crtSingleBut, 1, 0);
     controlsLayout->addWidget(crtLineBut, 2, 0);
@@ -49,25 +55,32 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(clearBut,6,0);
     controlsLayout->addWidget(updateBut,7,0);
     controlsLayout->addWidget(avaliableNodesL,8,0);
+    //controlsLayout->addWidget(sListWidget);
     
 
-    hbox->addWidget(scribbleArea);
+    vbox1->addWidget(scribbleArea);
+    //hbox->addWidget(sListWidget);
+    hbox->addLayout(vbox1);
     hbox->addLayout(controlsLayout);
+    hbox->addLayout(vbox3);
     connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); });
     connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); });
     connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode();});
+    connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); });
+
     connect(testBut, &QPushButton::clicked, this, [=]() {
-        QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
-        QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
-        scribbleArea->drawLineBetween(p1, p2);
+        //QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
+        //QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
+        //scribbleArea->drawLineBetween(p1, p2);
         });
     connect(test2But, &QPushButton::clicked, this, [=]() { 
         scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); 
         });
 
     connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
-    
-    setCentralWidget(testQW);
+    setLayout(hbox);
+    //setCentralWidget(scribbleArea);
+    //setCentralWidget(hbox);
     // Create actions and menus
     createActions();
     createMenus();
