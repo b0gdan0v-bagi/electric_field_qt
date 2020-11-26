@@ -47,6 +47,7 @@ private slots:
     void penColor();
     void penWidth();
     void about();
+    void updateListWidget();
 
 private:
 
@@ -81,7 +82,7 @@ private:
     // Opens the Save dialog and saves
     bool saveFile(const QByteArray& fileFormat);
 
-    void updateListWidget();
+    
 
     // What we'll draw on
     ScribbleArea* scribbleArea;

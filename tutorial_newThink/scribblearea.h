@@ -5,9 +5,10 @@
 #include <QImage>
 #include <QPoint>
 #include <QWidget>
+#include <QObject>
 
 
-class ScribbleArea : public QWidget
+class ScribbleArea : public QWidget, public QObject
 {
     // Declares our class as a QObject which is the base class
     // for all Qt objects
@@ -15,13 +16,13 @@ class ScribbleArea : public QWidget
     Q_OBJECT
 
 public:
-    ScribbleArea(QWidget* parent = 0);
+    ScribbleArea(QWidget* parent = 0) ;
 
     // Handles all events
     bool openImage(const QString& fileName);
     bool saveImage(const QString& fileName, const char* fileFormat);
-    void setPenColor(const QColor& newColor);
-    void setPenWidth(int newWidth);
+    void setPenColor(const QColor& newColor) { myPenColor = newColor; }
+    void setPenWidth(int newWidth) {myPenWidth = newWidth;}
 
     // Has the image been modified since last save
     bool isModified() const { return modified; }
@@ -37,17 +38,18 @@ public:
     bool creatingShape;
     void updateShapes();
 
-    void setLineMode() { nNodes = 2; scribblemodes = LINE; creatingShape = true;}
-    void setScribbleMode() {scribblemodes = NONE; creatingShape = true;}
-    void setSingleMode() {scribblemodes = SINGLE; creatingShape = true;}
-    void setCylinderMode() {scribblemodes = CYLINDER; creatingShape = true;}
+    void setLineMode() { updateShapes();  nNodes = 2; scribblemodes = LINE; creatingShape = true; }
+    void setScribbleMode() { updateShapes(); scribblemodes = NONE; creatingShape = true;}
+    void setSingleMode() { updateShapes(); scribblemodes = SINGLE; creatingShape = true;}
+    void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; creatingShape = true;}
+
+signals:
+    void dataReady(const QList<sShape*>& shapes_);
 
 public slots:
 
     // Events to handle
     void clearImage();
-    void print();
-    
 
 protected:
     void mousePressEvent(QMouseEvent* event) override;

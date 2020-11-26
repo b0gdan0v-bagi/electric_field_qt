@@ -14,7 +14,7 @@ MainWindow::MainWindow()
     //centralWidget = new CentralWidget(this);
    // setCentralWidget(centralWidget);
     sListWidget = new QListWidget(this);
-    scribbleArea = new ScribbleArea();
+    scribbleArea = new ScribbleArea(this);
     // Create the ScribbleArea widget and make it
     // the central widget
     
@@ -71,9 +71,17 @@ MainWindow::MainWindow()
     connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); });
     connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); });
     connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); });
+    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
     Foo foo;
-    QObject::connect(&foo,&Foo::dataReady, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); });
 
+    ScribbleArea TESTscr;
+    //sListWidget->addItem("privet");
+    //QObject::connect(&foo, &Foo::dataReady, this, [=]() {sListWidget->addItem("privet"); });
+    //foo.foo();
+    QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();
+        });
+   // WORKING // QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {sListWidget->addItem("privet"); });
+   // QWidget::connect(&TESTscr, &ScribbleArea::dataReady, this, updateListWidget());
     connect(testBut, &QPushButton::clicked, this, [=]() {
         //QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
         //QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
@@ -83,7 +91,7 @@ MainWindow::MainWindow()
         scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); 
         });
 
-    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
+    
     //setLayout(hbox);
     setCentralWidget(testQW);
     //setCentralWidget(hbox);

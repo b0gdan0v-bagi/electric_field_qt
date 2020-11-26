@@ -10,7 +10,7 @@
 #include "scribblearea.h"
 
 ScribbleArea::ScribbleArea(QWidget* parent)
-    : QWidget(parent)
+    : QWidget(parent), QObject(parent)
 {
     // Roots the widget to the top left even if resized
     setAttribute(Qt::WA_StaticContents);
@@ -59,17 +59,6 @@ bool ScribbleArea::saveImage(const QString& fileName, const char* fileFormat)
     }
 }
 
-// Used to change the pen color
-void ScribbleArea::setPenColor(const QColor& newColor)
-{
-    myPenColor = newColor;
-}
-
-// Used to change the pen width
-void ScribbleArea::setPenWidth(int newWidth)
-{
-    myPenWidth = newWidth;
-}
 
 // Color the image area with white
 void ScribbleArea::clearImage()
@@ -96,10 +85,6 @@ void ScribbleArea::updateShapes()
     }
 }
 
-void ScribbleArea::print()
-{
-}
-
 // If a mouse button is pressed check if it was the
 // left button and if so store the current position
 // Set that we are currently drawing
@@ -107,6 +92,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton && creatingShape) 
     {
+        
         switch (scribblemodes)
         {
         case ScribbleArea::NONE:
@@ -118,16 +104,19 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         }
         case ScribbleArea::LINE:
         {
-            switch (nNodes)
-            {
+            switch (nNodes) {
             case 2: { 
-                
-                point1 = event->pos(); drawRectangle(point1); nNodes--; break; }
+                point1 = event->pos(); drawRectangle(point1); nNodes--;
+                scribbling = true;
+                setMouseTracking(true);
+                break; }
             case 1: {
                 point2 = event->pos();
                 //drawRectangle(point2); 
                 nNodes++;
                 shapes.push_back(new sLine(point1, point2));
+                scribbling = false;
+                setMouseTracking(false);
                 updateShapes();
                 //drawLineBetween(point1, point2);
                 //creatingShape = false;
@@ -143,6 +132,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         case ScribbleArea::CYLINDER: break;
 
         }
+        emit dataReady(shapes);
     }
 }
 
@@ -151,8 +141,22 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
+    if (nNodes == 1 && scribblemodes == ScribbleModes::LINE)
+    {
+        updateShapes();
+        drawRectangle(point1);
+        drawLineBetween(point1, event->pos());
+        drawRectangle(event->pos());
+
+    }
+    
+    //if (event->buttons()) {  }
+    //if (event->buttons() == Qt::RightButton) drawRectangle(event->pos());
     if (scribblemodes == NONE)
-        if ((event->buttons() & Qt::LeftButton) && scribbling) drawLineTo(event->pos());
+        //if ((event->buttons() & Qt::LeftButton) && scribbling) drawLineTo(event->pos());
+    if (scribblemodes == LINE && nNodes == 1) {
+       // if ((event->buttons() & Qt::LeftButton) && scribbling) drawLineTo(event->pos());
+    }
 }
 
 // If the button is released we set variables to stop drawing
