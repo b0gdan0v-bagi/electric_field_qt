@@ -7,6 +7,7 @@
 #include "scribblearea.h"
 #include "sShape.h"
 #include <QListWidget>
+#include <QtWidgets>
 
 QT_BEGIN_NAMESPACE
 class QAction;

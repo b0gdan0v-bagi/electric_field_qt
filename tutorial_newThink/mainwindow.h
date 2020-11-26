@@ -6,6 +6,7 @@
 #include <qpushbutton.h>
 #include "scribblearea.h"
 #include "sShape.h"
+#include "centralWidget.h"
 #include <QListWidget>
 //#include "vec2D.h"
 
@@ -50,7 +51,7 @@ private slots:
 private:
 
     QPoint vec2DtoQPoint(const vd2D& v) { return QPoint(v.x, v.y); }
-
+    CentralWidget* centralWidget;
     QListWidget* sListWidget;
     //QList<sShape*> shapes;
 
@@ -79,6 +80,8 @@ private:
 
     // Opens the Save dialog and saves
     bool saveFile(const QByteArray& fileFormat);
+
+    void updateListWidget();
 
     // What we'll draw on
     ScribbleArea* scribbleArea;
