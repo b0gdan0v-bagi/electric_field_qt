@@ -19,8 +19,8 @@ MainWindow::MainWindow()
     // the central widget
     
     clearBut = new QPushButton("Clear", this);
-    testBut = new QPushButton("TEST", this);
-    test2But = new QPushButton("TEST 2", this);
+    testBut = new QPushButton("TEST potencial", this);
+    test2But = new QPushButton("TEST 2 eq poten", this);
     updateBut = new QPushButton("Update", this);
     crtLineBut = new QPushButton("Create line", this);
     crtScribbleBut = new QPushButton("Scribble", this);
@@ -78,17 +78,18 @@ MainWindow::MainWindow()
     //sListWidget->addItem("privet");
     //QObject::connect(&foo, &Foo::dataReady, this, [=]() {sListWidget->addItem("privet"); });
     //foo.foo();
-    QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();
-        });
+    QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();  });
+       
    // WORKING // QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {sListWidget->addItem("privet"); });
    // QWidget::connect(&TESTscr, &ScribbleArea::dataReady, this, updateListWidget());
     connect(testBut, &QPushButton::clicked, this, [=]() {
+        scribbleArea->calculatePotencial();
         //QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
         //QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
         //scribbleArea->drawLineBetween(p1, p2);
         });
     connect(test2But, &QPushButton::clicked, this, [=]() { 
-        scribbleArea->drawCylTo(QPoint(5 * testQSB->value(), 5 * testQSB->value()), 10); 
+        scribbleArea->findEqvivalent = true;
         });
 
     

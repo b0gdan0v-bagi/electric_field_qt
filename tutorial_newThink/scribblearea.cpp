@@ -1,4 +1,5 @@
 #include <QtWidgets>
+#include "qcolor.h"
 #if defined(QT_PRINTSUPPORT_LIB)
 #include <QtPrintSupport/qtprintsupportglobal.h>
 #if QT_CONFIG(printdialog)
@@ -6,6 +7,8 @@
 #include <QPrintDialog>
 #endif
 #endif
+
+#include "qdebug.h"
 
 #include "scribblearea.h"
 
@@ -23,6 +26,26 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     myPenColor = Qt::blue;
     scribblemodes = NONE; // test
     nNodes = 2;
+    drawRectangle(QPoint(this->size().width(), this->size().height()));
+    drawRectangle(QPoint(10, 10));
+    this->setBaseSize(500, 500);
+    this->size().setWidth(10);
+    this->size().setHeight(10);
+    //shapes.push_back(new sPoint(QPoint(this->size().width() / 2, this->size().height() / 2)));
+    //for (int i=0;i<width();i++)
+    //    for (int j=0;j<height();j++)
+            //shapes.push_back(new sPoint(QPoint(i*50 , j*50 )));
+    
+    //QColor(Qrbg 2);
+    int testx_1 = 100 + width() / 4;
+    int testx_2 = 200 + 3*width() / 4;
+    int testy_1 = 100+10*height() / 2;
+    int testy_2 = 100 + 10*height() / 2;
+    shapes.push_back(new sPoint(QPoint(testx_1, testy_1)));
+    shapes.push_back(new sPoint(QPoint(testx_2, testy_2), -1.f));
+    
+
+    updateShapes();
 }
 
 // Used to load the image and place it in the widget
@@ -85,54 +108,139 @@ void ScribbleArea::updateShapes()
     }
 }
 
+void ScribbleArea::calculatePotencial()
+{
+    //arrayOfPotencials.clear();
+    float radius;
+    float minPot = 0;
+    for (auto const& i : shapes)
+        minPot += (1 / std::sqrt(pow(i->vecNodes[0].pos.x(), 2) + pow(i->vecNodes[0].pos.y(), 2)));
+    float maxPot = minPot;
+
+    for (int y = 0; y < height(); y++)
+    {
+        std::vector<float> tempPot(width());
+        for (int x = 0; x < width(); x++)
+        {
+            tempPot[x] = 0;
+            for (auto const& i : shapes) {
+                radius = std::sqrt(pow(x - i->vecNodes[0].pos.x(), 2) + pow(y - i->vecNodes[0].pos.y(), 2));
+                if (radius!=0) tempPot[x] += (i->charge / radius);
+            }
+            if (tempPot[x] > maxPot) maxPot = tempPot[x];
+            if (tempPot[x] < minPot) minPot = tempPot[x];
+        }
+        arrayOfPotencials.push_back(tempPot);
+    }
+    QPainter painter(&image);
+    //QMessageBox akaDebug;
+    //akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot));
+    //akaDebug.exec();
+    
+
+    //float const maxV = (float)pow(256, 3);
+    float const maxV = 200;
+    for (int y = 0; y < height(); y++)
+    {
+        for (int x = 0; x < width(); x++)
+        {
+            painter.setPen(QPen(QColor::fromRgb(200,
+                 maxV * (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot),
+                255),
+                1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            painter.drawPoint(x, y);
+        }
+    }
+    update();   
+}
+
+void ScribbleArea::calcEqPot(QPoint& point)
+{
+    //findEqvivalent = false;
+    //QMessageBox akaDebug;
+    //akaDebug.setText("x = " + QString::number(point.x()) + " y = " + QString::number(point.y()));
+    //akaDebug.exec();
+    QPainter painter(&image);
+    painter.setPen(QPen(Qt::red,1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    float potToFind = arrayOfPotencials[point.y()][point.x()];
+    float precision = 1; // %
+    for (int y = 0; y < height(); y++)
+        for (int x = 0; x < width(); x++)
+        {
+            if (potToFind > 0) {
+                if (arrayOfPotencials[y][x] <= potToFind * (1 + precision / 100)
+                    && arrayOfPotencials[y][x] >= potToFind * (1 - precision / 100))
+                {
+                    painter.drawPoint(x, y);
+                }
+            }
+            else {
+                if (arrayOfPotencials[y][x] >= potToFind * (1 + precision / 100)
+                    && arrayOfPotencials[y][x] <= potToFind * (1 - precision / 100))
+                {
+                    painter.drawPoint(x, y);
+                }
+            }
+        }
+    update();
+}
+
 // If a mouse button is pressed check if it was the
 // left button and if so store the current position
 // Set that we are currently drawing
 void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton && creatingShape) 
+    if (findEqvivalent)
     {
-        
-        switch (scribblemodes)
-        {
-        case ScribbleArea::NONE:
-        {
-            lastPoint = event->pos();
-            scribbling = true;
-            //creatingShape = false;
-            break;
-        }
-        case ScribbleArea::LINE:
-        {
-            switch (nNodes) {
-            case 2: { 
-                point1 = event->pos(); drawRectangle(point1); nNodes--;
-                scribbling = true;
-                setMouseTracking(true);
-                break; }
-            case 1: {
-                point2 = event->pos();
-                //drawRectangle(point2); 
-                nNodes++;
-                shapes.push_back(new sLine(point1, point2));
-                scribbling = false;
-                setMouseTracking(false);
-                updateShapes();
-                //drawLineBetween(point1, point2);
-                //creatingShape = false;
-                break; }
-            }
-            break;
-        }
-        case ScribbleArea::SINGLE: {
-            //drawRectangle(event->pos());
-            shapes.push_back(new sPoint(event->pos()));
-            updateShapes();
-            break; }
-        case ScribbleArea::CYLINDER: break;
+        if (event->button() == Qt::LeftButton && findEqvivalent) calcEqPot(event->pos());
+    }
+    else { // test
+    
 
+
+        if (event->button() == Qt::LeftButton && creatingShape)
+        {
+            switch (scribblemodes)
+            {
+            case ScribbleArea::NONE:
+            {
+                lastPoint = event->pos();
+                scribbling = true;
+                //creatingShape = false;
+                break;
+            }
+            case ScribbleArea::LINE:
+            {
+                switch (nNodes) {
+                case 2: {
+                    point1 = event->pos(); drawRectangle(point1); nNodes--;
+                    scribbling = true;
+                    setMouseTracking(true);
+                    break; }
+                case 1: {
+                    point2 = event->pos();
+                    //drawRectangle(point2); 
+                    nNodes++;
+                    shapes.push_back(new sLine(point1, point2));
+                    scribbling = false;
+                    setMouseTracking(false);
+                    updateShapes();
+                    //drawLineBetween(point1, point2);
+                    //creatingShape = false;
+                    break; }
+                }
+                break;
+            }
+            case ScribbleArea::SINGLE: {
+                //drawRectangle(event->pos());
+                shapes.push_back(new sPoint(event->pos()));
+                updateShapes();
+                break; }
+            case ScribbleArea::CYLINDER: break;
+
+            }
+            emit dataReady(shapes);
         }
-        emit dataReady(shapes);
     }
 }
 

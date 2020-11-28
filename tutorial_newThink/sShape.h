@@ -32,6 +32,7 @@ struct sShape
 	// coefficients, so share them staically
 	static float fWorldScale;
 	static vf2D vWorldOffset;
+	float charge = { 1 };
 
 	// Convert coordinates from World Space --> Screen Space
 	void WorldToScreen(const vf2D& v, int& nScreenX, int& nScreenY)
@@ -126,8 +127,9 @@ struct sLine : public sShape
 
 struct sPoint : public sShape
 {
-	sPoint(QPoint POS)
+	sPoint(QPoint POS, float charge_ = 1)
 	{
+		charge = charge_;
 		nMaxNodes = 1;
 		//.push_back(sNode(this, POS));
 		addNode(POS);

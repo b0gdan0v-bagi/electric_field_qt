@@ -6,6 +6,7 @@
 #include <QPoint>
 #include <QWidget>
 #include <QObject>
+#include <vector>
 
 
 class ScribbleArea : public QWidget, public QObject
@@ -42,6 +43,11 @@ public:
     void setScribbleMode() { updateShapes(); scribblemodes = NONE; creatingShape = true;}
     void setSingleMode() { updateShapes(); scribblemodes = SINGLE; creatingShape = true;}
     void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; creatingShape = true;}
+
+    std::vector<std::vector<float>> arrayOfPotencials;
+    void calculatePotencial();
+    bool findEqvivalent = { false };
+    void calcEqPot(QPoint& point);
 
 signals:
     void dataReady(const QList<sShape*>& shapes_);
