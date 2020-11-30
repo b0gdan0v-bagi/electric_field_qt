@@ -9,6 +9,7 @@
 #include <vector>
 
 
+
 class ScribbleArea : public QWidget, public QObject
 {
     // Declares our class as a QObject which is the base class
@@ -33,8 +34,8 @@ public:
 
     //bool lineMode;
     int nNodes;
-    QPoint point1, point2;
-    enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER } scribblemodes = NONE;
+    QPoint tempPoint; // for line
+    enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER, POTHEATMAP, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
     QList<sShape*> shapes;
     bool creatingShape;
     void updateShapes();
@@ -43,9 +44,13 @@ public:
     void setScribbleMode() { updateShapes(); scribblemodes = NONE; creatingShape = true;}
     void setSingleMode() { updateShapes(); scribblemodes = SINGLE; creatingShape = true;}
     void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; creatingShape = true;}
+    void setEqPotLinesMode() { scribblemodes = EQPOTLINES; creatingShape = true;}
+
 
     std::vector<std::vector<float>> arrayOfPotencials;
     void calculatePotencial();
+    QColor floatToRgb(float minValue, float maxValue, float value);
+
     bool findEqvivalent = { false };
     void calcEqPot(QPoint& point);
 

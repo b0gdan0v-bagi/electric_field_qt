@@ -39,10 +39,10 @@
     <ClCompile Include="mousecoordlabel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="centralWidget.cpp">
+    <ClCompile Include="mainWindowUIcontrolos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mainWindowUIcontrolos.cpp">
+    <ClCompile Include="scribbleareamanagment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -54,9 +54,6 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="mousecoordlabel.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <QtMoc Include="centralWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="foo.h">

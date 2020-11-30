@@ -33,22 +33,13 @@ MainWindow::MainWindow()
     //    avaliableNodesL->setText("Number = " + QString::number(i));
 
     testQSB = new QSpinBox(this);
-    
-    //shapes.push_back(new sLine());
-    //shapes.back()->GetNextNode(vf2D(50, 50));
-    //shapes.back()->GetNextNode(vf2D(100, 100));
-    //testBut->setText(QString::number(shapes.back()->vecNodes.size()));
-    //shapes.back()->vecNodes[0].pos = vf2D(50, 50);
 
-    
-    //setCentralWidget(scribbleArea);
     QWidget* testQW = new QWidget(this);
     QGridLayout* controlsLayout = new QGridLayout();
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
-    //QHBoxLayout* hbox = new QHBoxLayout(this);
-    //QVBoxLayout* vbox3 = new QVBoxLayout();
+
     QVBoxLayout* vbox1 = new QVBoxLayout();
-    //vbox3->addWidget(sListWidget);
+
     controlsLayout->addWidget(crtScribbleBut, 0, 0);
     controlsLayout->addWidget(crtSingleBut, 1, 0);
     controlsLayout->addWidget(crtLineBut, 2, 0);
@@ -72,25 +63,9 @@ MainWindow::MainWindow()
     connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); });
     connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); });
     connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
-    Foo foo;
-
-    ScribbleArea TESTscr;
-    //sListWidget->addItem("privet");
-    //QObject::connect(&foo, &Foo::dataReady, this, [=]() {sListWidget->addItem("privet"); });
-    //foo.foo();
-    QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();  });
-       
-   // WORKING // QObject::connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {sListWidget->addItem("privet"); });
-   // QWidget::connect(&TESTscr, &ScribbleArea::dataReady, this, updateListWidget());
-    connect(testBut, &QPushButton::clicked, this, [=]() {
-        scribbleArea->calculatePotencial();
-        //QPoint p1 = vec2DtoQPoint(shapes.back()->vecNodes[0].pos);
-        //QPoint p2 = vec2DtoQPoint(shapes.back()->vecNodes[1].pos);
-        //scribbleArea->drawLineBetween(p1, p2);
-        });
-    connect(test2But, &QPushButton::clicked, this, [=]() { 
-        scribbleArea->findEqvivalent = true;
-        });
+    connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();  });
+    connect(testBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial();});
+    connect(test2But, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); });
 
     
     //setLayout(hbox);
@@ -194,23 +169,8 @@ void MainWindow::about()
         tr("<p>The <b>Scribble</b> example is awesome</p>"));
 }
 
-void MainWindow::testColorBut()
-{
-    scribbleArea->setPenColor(QColor(Qt::GlobalColor::blue));
-    //scribbleArea->drawLineTo(QPoint(50, 50));
-    scribbleArea->drawCylTo(QPoint(50, 50),10);
-}
-void MainWindow::testColorBut2()
-{
-    scribbleArea->setPenColor(QColor(Qt::GlobalColor::blue));
-    //scribbleArea->drawLineTo(QPoint(50, 50));
-    
-    scribbleArea->drawCylTo(QPoint(5* testQSB->value(), 50), 10);
-}
+
 // Define menu actions that call functions
-
-
-
 bool MainWindow::maybeSave()
 {
     // Check for changes since last save
