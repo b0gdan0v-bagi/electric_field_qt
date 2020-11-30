@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QObject>
 #include <vector>
+#include "qmatrix.h"
 
 
 
@@ -34,7 +35,7 @@ public:
 
     //bool lineMode;
     int nNodes;
-    QPoint tempPoint; // for line
+    QVector2D tempPoint; // for line
     enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER, POTHEATMAP, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
     QList<sShape*> shapes;
     bool creatingShape;

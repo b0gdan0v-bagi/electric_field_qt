@@ -57,11 +57,11 @@ void ScribbleArea::updateShapes()
     {
         switch (sh->shapeType)
         {
-        case 0: {drawRectangle(sh->vecNodes[0].pos); break; }
+        case 0: {drawRectangle(sh->vecNodes[0].pos.toPoint()); break; }
         case 1: {
-            for (int i = 0; i < sh->vecNodes.size(); i++) drawRectangle(sh->vecNodes.at(i).pos);
+            for (int i = 0; i < sh->vecNodes.size(); i++) drawRectangle(sh->vecNodes.at(i).pos.toPoint());
             // "if" for checking only
-            if (sh->vecNodes.size() > 1) drawLineBetween(sh->vecNodes.at(0).pos, sh->vecNodes.at(1).pos);
+            if (sh->vecNodes.size() > 1) drawLineBetween(sh->vecNodes.at(0).pos.toPoint(), sh->vecNodes.at(1).pos.toPoint());
             break; }
         }
     }
@@ -73,37 +73,96 @@ void ScribbleArea::calculatePotencial()
     float radius;
     float minPot = 0;
     float avgPot = 0;
-    for (auto const& i : shapes)
-        minPot += (1 / std::sqrt(pow(i->vecNodes[0].pos.x(), 2) + pow(i->vecNodes[0].pos.y(), 2)));
     float maxPot = minPot;
-
+    QMessageBox akaDebug;
     for (int y = 0; y < height(); y++)
     {
         std::vector<float> tempPot(width());
         for (int x = 0; x < width(); x++)
         {
             tempPot[x] = 0;
-            for (auto const& i : shapes) {
-                radius = std::sqrt(pow(x - i->vecNodes[0].pos.x(), 2) + pow(y - i->vecNodes[0].pos.y(), 2));
-                if (radius>3) tempPot[x] += (i->charge / radius);
+            for (auto const& sh : shapes) {
+                switch (sh->shapeType)
+                {
+                case sShape::ShapeType::POINT: {
+                     radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
+                     if (radius > 3) tempPot[x] += (sh->charge / radius); break; 
+                }
+                case sShape::ShapeType::LINE: {
+                    QVector2D intersectPoint;
+                    float A1 = (sh->vecNodes[0].pos.y() - sh->vecNodes[1].pos.y());
+                    float B1 = (sh->vecNodes[1].pos.x() - sh->vecNodes[0].pos.x());
+                    float C1 = (sh->vecNodes[0].pos.x() * sh->vecNodes[1].pos.y() - sh->vecNodes[1].pos.x() * sh->vecNodes[0].pos.y());
+                    float A2 = -B1;
+                    float B2 = A1;
+                    float C2 = B1 * x - A1 * y;
+                    float det = A1 * B2 - B1 * A2;
+                    if (det == 0) break;
+                    else {
+                        intersectPoint.setX((-C1 * B2 + B1 * C2) / det);
+                        intersectPoint.setY((A2 * C1 - A1 * C2) / det);
+                    }
+                    
+                    //drawRectangle(intersectPoint.toPoint());
+                    //drawLineBetween(QPoint(x,y),intersectPoint.toPoint());
+                    
+                    //
+                    radius = QVector2D(x, y).distanceToLine(sh->vecNodes[0].pos, sh->vecNodes[1].pos);
+                    if (radius > 3)
+                    {
+                        float l1, l2;
+                        float d1 = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
+                        float d2 = QVector2D(x, y).distanceToPoint(sh->vecNodes[1].pos);
+                        float l = (sh->vecNodes[1].pos - sh->vecNodes[0].pos).length();
+                    
+                        if (radius <= d1 && radius <= d2)
+                        {
+                            if (d1 < d2) {
+                                //l1 = 0; l2 = l;
+                            }
+                            else {
+                                //l2 = 0; l1 = l;
+                            }
+                        }
+                        else
+                        {
+                            //l1 = intersectPoint.distanceToPoint(sh->vecNodes[0].pos);
+                            //l2 = intersectPoint.distanceToPoint(sh->vecNodes[1].pos);
+                        }
+                        l1 = intersectPoint.distanceToPoint(sh->vecNodes[0].pos);
+                        l2 = intersectPoint.distanceToPoint(sh->vecNodes[1].pos);
+                        if (l1+l2>l)
+                            if (d1 < d2)
+                            {
+                                l1 = 0; l2 = l;
+                            }
+                            else
+                            {
+                                l1 = l; l2 = 0;
+                            }
+                        
+                        tempPot[x] += sh->charge * 1 * log((l1 + sqrt(radius * radius + l1 * l1)) / (-l2 + sqrt(radius * radius + l2 * l2))) /*/ l*/;
+                        akaDebug.setText("l1 " + QString::number(l1)+ " l2 " + QString::number(l2) + " d1 " + QString::number(d1) + " d2 " + QString::number(d2));
+                        //akaDebug.exec();
+                    }
+                    
+                    break;
+                }
+                    
+                }
                
             }
             if (tempPot[x] > maxPot) maxPot = tempPot[x];
             if (tempPot[x] < minPot) minPot = tempPot[x];
             avgPot += tempPot[x];
-            if (tempPot[x] > 1.1) {
-                //QMessageBox akaDebug2;
-                //akaDebug2.setText("x = " + QString::number(x) + " max = " + QString::number(y));
-                //akaDebug2.exec();
-            }
         }
         arrayOfPotencials.push_back(tempPot);
     }
     avgPot /= ( height() * width());
     QPainter painter(&image);
-    QMessageBox akaDebug;
+    
     akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot) + " avg " + QString::number(avgPot));
-   // akaDebug.exec();
+    akaDebug.exec();
     
 
     //float const maxV = (float)pow(256, 3);
@@ -119,12 +178,6 @@ void ScribbleArea::calculatePotencial()
             //QColor colorHeatMap = floatToRgb(0, 1, normalizedPot);
             QColor colorHeatMap = floatToRgb(minPot, maxPot/2, arrayOfPotencials[y][x]);
 
-            if (y == height() / 2) {
-            //    akaDebug.setText("number = " + QString::number(normalizedPot)
-            //        + " float to rgb = " + QString::number(floatToRgb(0,1,normalizedPot).red()));
-            //    akaDebug.exec();
-            }
-            
             painter.setPen(QPen(
                 colorHeatMap,
                 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -199,8 +252,8 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         {
             if (nNodes == 2)
             {
-                tempPoint = event->pos(); 
-                drawRectangle(tempPoint); 
+                tempPoint = QVector2D(event->pos());// 
+                drawRectangle(tempPoint.toPoint());
                 nNodes--;
                 scribbling = true;
                 setMouseTracking(true);
@@ -208,7 +261,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             else if (nNodes == 1)
             {
                 nNodes++;
-                shapes.push_back(new sLine(tempPoint, event->pos()));
+                shapes.push_back(new sLine(tempPoint, QVector2D(event->pos())));
                 scribbling = false;
                 //setMouseTracking(false);
                 updateShapes();
@@ -216,7 +269,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             break; 
         }
         case ScribbleArea::SINGLE: {
-            shapes.push_back(new sPoint(event->pos()));
+            shapes.push_back(new sPoint(QVector2D(event->pos())));
             updateShapes();
             break; }
         case ScribbleArea::CYLINDER:
@@ -245,8 +298,8 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         if (nNodes == 1)
         {
             updateShapes();
-            drawRectangle(tempPoint);
-            drawLineBetween(tempPoint, event->pos());
+            drawRectangle(tempPoint.toPoint());
+            drawLineBetween(tempPoint.toPoint(), event->pos());
             drawRectangle(event->pos());
         }
         else {

@@ -1,5 +1,6 @@
 #pragma once
 #include "vec2D.h"
+#include "qvector2d.h"
 #include <QVector>
 #include <vector>
 #include <QWidget>
@@ -12,9 +13,9 @@ struct sNode
 {
 	sShape* parent;
 	//vf2D pos;
-	QPoint pos;
+	QVector2D pos;
 	sNode() {}
-	sNode(sShape* parent_, QPoint pos_) : pos(pos_), parent(parent_) {}
+	sNode(sShape* parent_, QVector2D pos_) : pos(pos_), parent(parent_) {}
 };
 
 struct sShape
@@ -40,7 +41,7 @@ struct sShape
 		nScreenX = (int)((v.x - vWorldOffset.x) * fWorldScale);
 		nScreenY = (int)((v.y - vWorldOffset.y) * fWorldScale);
 	}
-	void addNode(QPoint POS) { if (vecNodes.size() < nMaxNodes) vecNodes.push_back(sNode(this, POS));}
+	void addNode(QVector2D POS) { if (vecNodes.size() < nMaxNodes) vecNodes.push_back(sNode(this, POS));}
 
 	// This is a PURE function, which makes this class abstract. A sub-class
 	// of this class must provide an implementation of this function by
@@ -97,7 +98,7 @@ struct sShape
 
 struct sLine : public sShape
 {
-	sLine(QPoint p1, QPoint p2)
+	sLine(QVector2D p1, QVector2D p2)
 	{
 		nMaxNodes = 2;
 		//vecNodes.reserve(nMaxNodes); // We're gonna be getting pointers to vector elements
@@ -127,7 +128,7 @@ struct sLine : public sShape
 
 struct sPoint : public sShape
 {
-	sPoint(QPoint POS, float charge_ = 1)
+	sPoint(QVector2D POS, float charge_ = 1)
 	{
 		charge = charge_;
 		nMaxNodes = 1;
