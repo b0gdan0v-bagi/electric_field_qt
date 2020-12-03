@@ -21,6 +21,7 @@
     <ClCompile Include="mousecoordlabel.cpp" />
     <ClCompile Include="scribblearea.cpp" />
     <ClCompile Include="scribbleareamanagment.cpp" />
+    <ClCompile Include="scriblearea_algebra.cpp" />
     <ClCompile Include="sShape.cpp" />
   </ItemGroup>
   <ItemGroup>

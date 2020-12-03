@@ -54,6 +54,7 @@ public:
 
     bool findEqvivalent = { false };
     void calcEqPot(QPoint& point);
+    float chargeToAdd = { 1 };
 
 signals:
     void dataReady(const QList<sShape*>& shapes_);

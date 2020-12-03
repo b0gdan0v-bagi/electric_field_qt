@@ -22,6 +22,7 @@ struct sShape
 {
 	// Shapes are defined by the placment of nodes
 	std::vector<sNode> vecNodes;
+	std::list<QVector2D*> allPoints;
 	uint32_t nMaxNodes = 0;
 
 	enum ShapeType {POINT,LINE} shapeType;
@@ -98,7 +99,7 @@ struct sShape
 
 struct sLine : public sShape
 {
-	sLine(QVector2D p1, QVector2D p2)
+	sLine(QVector2D p1, QVector2D p2, float charge_ = 1)
 	{
 		nMaxNodes = 2;
 		//vecNodes.reserve(nMaxNodes); // We're gonna be getting pointers to vector elements
@@ -106,10 +107,17 @@ struct sLine : public sShape
 		// it safe to do this as we know the vector will not be maniupulated as we add nodes
 		// to it. Is this bad practice? Possibly, but as with all thing programming, if you
 		// know what you are doing, it's ok :D
-
+		charge = charge_ * p1.distanceToPoint(p2);
 		addNode(p1);
 		addNode(p2);
 		shapeType = LINE;
+		float length = p1.distanceToPoint(p2);
+		float lambda;
+		for (float i = 1; i < length; i++)
+		{
+			lambda = i / (length - i);
+			allPoints.push_back(new QVector2D((p1.x() + lambda * p2.x()) / (1 + lambda), (p1.y() + lambda * p2.y()) / (1 + lambda)));
+		}
 	}
 	void drawToScribbleArea()
 	{
@@ -134,6 +142,7 @@ struct sPoint : public sShape
 		nMaxNodes = 1;
 		//.push_back(sNode(this, POS));
 		addNode(POS);
+		allPoints.push_back(new QVector2D(POS));
 		//vecNodes.reserve(nMaxNodes);
 		shapeType = POINT;
 	}

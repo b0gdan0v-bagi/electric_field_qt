@@ -26,6 +26,11 @@ MainWindow::MainWindow()
     crtScribbleBut = new QPushButton("Scribble", this);
     crtSingleBut = new QPushButton("Create 1 point", this);
     avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
+    chargeLabel = new QLabel("charge = k* ");
+    chargeLE = new QLineEdit(this);
+    chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
+
+    chargeLE->setText(QString::number(1));
     
     //nNodes = &scribbleArea->nNodes;
     //later - connect label to nNodes in area;
@@ -49,8 +54,10 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(testQSB,5,0);
     controlsLayout->addWidget(clearBut,6,0);
     controlsLayout->addWidget(updateBut,7,0);
-    controlsLayout->addWidget(avaliableNodesL,8,0);
-    controlsLayout->addWidget(sListWidget,0,1,10,4);
+    //controlsLayout->addWidget(avaliableNodesL,8,0);
+    controlsLayout->addWidget(chargeLabel,9,0);
+    controlsLayout->addWidget(chargeLE,9,1,1,2);
+    controlsLayout->addWidget(sListWidget,0,1,8,4);
     
 
     vbox1->addWidget(scribbleArea);
@@ -58,14 +65,15 @@ MainWindow::MainWindow()
     hbox->addLayout(vbox1);
     hbox->addLayout(controlsLayout);
     //hbox->addLayout(vbox3);
-    connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); });
-    connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); });
-    connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); });
-    connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); });
-    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); });
-    connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget();  });
-    connect(testBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial();});
-    connect(test2But, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); });
+    connect(chargeLE, &QLineEdit::textChanged,this, [=]() {scribbleArea->chargeToAdd = chargeLE->text().toInt(); });
+    connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
+    connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); scribbleArea->setMouseTracking(true); });
+    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); scribbleArea->setMouseTracking(true); });
+    connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); scribbleArea->setMouseTracking(true); });
+    connect(testBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
+    connect(test2But, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
 
     
     //setLayout(hbox);
