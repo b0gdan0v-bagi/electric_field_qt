@@ -19,16 +19,18 @@ MainWindow::MainWindow()
     // the central widget
     
     clearBut = new QPushButton("Clear", this);
-    testBut = new QPushButton("TEST potencial", this);
-    test2But = new QPushButton("TEST 2 eq poten", this);
+    potMapBut = new QPushButton("show potencial map", this);
+    showEqBut = new QPushButton("show equipotential", this);
     updateBut = new QPushButton("Update", this);
     crtLineBut = new QPushButton("Create line", this);
     crtScribbleBut = new QPushButton("Scribble", this);
     crtSingleBut = new QPushButton("Create 1 point", this);
+    dirBut = new QPushButton("Show directions", this);
     avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
     chargeLabel = new QLabel("charge = k* ");
     chargeLE = new QLineEdit(this);
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
+    reverseChargeBut = new QPushButton("Reverse charge", this);
 
     chargeLE->setText(QString::number(1));
     
@@ -49,15 +51,16 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(crtSingleBut, 1, 0);
     controlsLayout->addWidget(crtLineBut, 2, 0);
 
-    controlsLayout->addWidget(testBut,3,0);
-    controlsLayout->addWidget(test2But,4,0);
+    controlsLayout->addWidget(potMapBut,3,0);
+    controlsLayout->addWidget(showEqBut,4,0);
     controlsLayout->addWidget(testQSB,5,0);
     controlsLayout->addWidget(clearBut,6,0);
     controlsLayout->addWidget(updateBut,7,0);
-    //controlsLayout->addWidget(avaliableNodesL,8,0);
+    controlsLayout->addWidget(dirBut,8,0);
     controlsLayout->addWidget(chargeLabel,9,0);
     controlsLayout->addWidget(chargeLE,9,1,1,2);
-    controlsLayout->addWidget(sListWidget,0,1,8,4);
+    controlsLayout->addWidget(reverseChargeBut,9,4);
+    controlsLayout->addWidget(sListWidget,0,2,7,3);
     
 
     vbox1->addWidget(scribbleArea);
@@ -71,9 +74,11 @@ MainWindow::MainWindow()
     connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
     connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); scribbleArea->setMouseTracking(true); });
     connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); scribbleArea->setMouseTracking(true); });
-    connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); scribbleArea->setMouseTracking(true); });
-    connect(testBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
-    connect(test2But, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
+    connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); });
+    connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
+    connect(showEqBut, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
+    connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
+    connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
 
     
     //setLayout(hbox);

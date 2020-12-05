@@ -35,6 +35,8 @@ struct sShape
 	static float fWorldScale;
 	static vf2D vWorldOffset;
 	float charge = { 1 };
+	float length;
+	float chargePerPoint = charge;
 
 	// Convert coordinates from World Space --> Screen Space
 	void WorldToScreen(const vf2D& v, int& nScreenX, int& nScreenY)
@@ -43,6 +45,7 @@ struct sShape
 		nScreenY = (int)((v.y - vWorldOffset.y) * fWorldScale);
 	}
 	void addNode(QVector2D POS) { if (vecNodes.size() < nMaxNodes) vecNodes.push_back(sNode(this, POS));}
+	QColor getColor() { return (charge > 0) ? Qt::red : Qt::blue; }
 
 	// This is a PURE function, which makes this class abstract. A sub-class
 	// of this class must provide an implementation of this function by
@@ -111,13 +114,14 @@ struct sLine : public sShape
 		addNode(p1);
 		addNode(p2);
 		shapeType = LINE;
-		float length = p1.distanceToPoint(p2);
+		length = p1.distanceToPoint(p2);
 		float lambda;
 		for (float i = 1; i < length; i++)
 		{
 			lambda = i / (length - i);
 			allPoints.push_back(new QVector2D((p1.x() + lambda * p2.x()) / (1 + lambda), (p1.y() + lambda * p2.y()) / (1 + lambda)));
 		}
+		chargePerPoint = charge_;
 	}
 	void drawToScribbleArea()
 	{

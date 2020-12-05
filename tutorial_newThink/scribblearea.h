@@ -46,6 +46,7 @@ public:
     void setSingleMode() { updateShapes(); scribblemodes = SINGLE; creatingShape = true;}
     void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; creatingShape = true;}
     void setEqPotLinesMode() { scribblemodes = EQPOTLINES; creatingShape = true;}
+    void setDirectionsMode() { scribblemodes = DIRECTIONS; }
 
 
     std::vector<std::vector<float>> arrayOfPotencials;
@@ -55,6 +56,9 @@ public:
     bool findEqvivalent = { false };
     void calcEqPot(QPoint& point);
     float chargeToAdd = { 1 };
+    QVector2D summaryFieldInPoint(const QVector2D start);
+    QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
+    bool powerLineCrossChargeOrBorder(const QVector2D lastPoint);
 
 signals:
     void dataReady(const QList<sShape*>& shapes_);
@@ -77,11 +81,13 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 public: // for test
+    void drawText(const QPoint& point, const QString& s, const QColor c = Qt::black);
     void drawCylTo(QPoint &point, qreal WIDTH);
-    void drawRectangle(QPoint& point);
+    void drawRectangle(QPoint& point, QColor pointColor = Qt::green, qreal pointWidth = 15);
     void drawLineTo(const QPoint& endPoint);
-    void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint);
+    void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint, const QColor lineColor = Qt::black);
 private:
+    QVector2D findIntersectLineNormal(QVector2D line_p1, QVector2D line_p2, QVector2D outer_p);
     void resizeImage(QImage* image, const QSize& newSize);
 
     // Will be marked true or false depending on if

@@ -61,12 +61,14 @@ private:
     QPushButton* crtSingleBut;
     QPushButton* crtScribbleBut;
     QPushButton* updateBut;
+    QPushButton* dirBut;
+    QPushButton* reverseChargeBut;
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
     int nNodes;
 
-    QPushButton* testBut;
-    QPushButton* test2But;
+    QPushButton* potMapBut;
+    QPushButton* showEqBut;
     QSpinBox* testQSB;
     QPushButton* clearBut;
 
