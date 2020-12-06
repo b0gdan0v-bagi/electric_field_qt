@@ -111,6 +111,7 @@ struct sLine : public sShape
 		// to it. Is this bad practice? Possibly, but as with all thing programming, if you
 		// know what you are doing, it's ok :D
 		charge = charge_ * p1.distanceToPoint(p2);
+		charge = charge_; // FOR TEST
 		addNode(p1);
 		addNode(p2);
 		shapeType = LINE;

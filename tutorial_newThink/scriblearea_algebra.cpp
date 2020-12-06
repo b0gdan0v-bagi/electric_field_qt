@@ -14,80 +14,76 @@ QVector2D ScribbleArea::findIntersectLineNormal(QVector2D line_p1, QVector2D lin
     else return QVector2D((-C1 * B2 + B1 * C2) / det, (A2 * C1 - A1 * C2) / det); //inverse matrix * vector {-C1,-C2}
 }
 
-QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D start)
+QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
 {
-    QVector2D res = start;
+    QVector2D res = curPoint;
     float trueFieldValue = 0;
-    float const koef = 100.f; //debug, field ampf on screen
+    float const koef = 200.f; //debug, field ampf on screen
     for (auto const& sh : shapes)
         switch (sh->shapeType)
         {
         case sShape::ShapeType::POINT: {
-            float radius = (sh->vecNodes[0].pos - QVector2D(start)).length();
-            if (radius > 3) {
-               
-                float field = sh->charge / pow(radius / koef, 2);
-                float lengthOfFieldVector = (sh->charge > 0) ? 2 : -2;
-                float lambda = (radius + lengthOfFieldVector) / radius;
-
-                lambda = (radius + lengthOfFieldVector) / radius;
-
-                //res += (QVector2D(start) - chargePoint) * lambda + chargePoint - QVector2D(start);
-                res += plusFieldInPointByPoint(start, sh->vecNodes[0].pos, sh->charge);
-                trueFieldValue += field;
-            }
+            float radius = (sh->vecNodes[0].pos - QVector2D(curPoint)).length();
+            //if (radius > 3)
+            //{
+                //res += (QVector2D(curPoint) - chargePoint) * lambda + chargePoint - QVector2D(curPoint);
+                res += plusFieldInPointByPoint(curPoint, sh->vecNodes[0].pos, sh->charge);
+                trueFieldValue += sh->charge / pow(radius / koef, 2);
+            //}
             break; }
         case sShape::ShapeType::LINE:
         {
             for (auto const pts : sh->allPoints)
             {
-                float radius = (*pts - QVector2D(start)).length();
-                if (radius > 3) {
+                float radius = (*pts - QVector2D(curPoint)).length();
+               // if (radius > 3) {
                     trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
-                    res += plusFieldInPointByPoint(start, *pts, sh->chargePerPoint);
-                }
+                    res += plusFieldInPointByPoint(curPoint, *pts, sh->chargePerPoint);
+              //  }
             }
 
             break;
         }
         }
-    float lengthOfFieldVector = (trueFieldValue > 0) ? 2 : -2;
-    float radius = (res - QVector2D(start)).length();
+    float lengthOfFieldVector = (trueFieldValue > 0) ? 10 : -10;
+    float radius = (res - QVector2D(curPoint)).length();
     float lambda = (radius + lengthOfFieldVector) / radius;
-    res = (res - QVector2D(start)) * lambda + res;
+    res = (res - QVector2D(curPoint)) * lambda + res;
 
     return res;
 }
 
-QVector2D ScribbleArea::plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge)
+QVector2D ScribbleArea::plusFieldInPointByPoint(const QVector2D curPoint, const QVector2D chargePoint, const float charge)
 {
-    float radius = (chargePoint - QVector2D(pos)).length();
-    if (radius > 3) {
-        float const koef = 100.f;
+    float radius = (chargePoint - QVector2D(curPoint)).length();
+    //if (radius > 3) {
+        float const koef = 200.f;
         float field = charge / pow(radius / koef, 2);
-        float lengthOfFieldVector = (charge > 0) ? 2 : -2;
-        float lambda = (radius + lengthOfFieldVector) / radius;
+        float lengthOfFieldVector = (charge > 0) ? 10 : -10;
+        float lambda = (radius + field) / radius;
 
         lambda = (radius + lengthOfFieldVector) / radius;
 
-        return (pos - chargePoint) * lambda + chargePoint - pos;
+        return (curPoint - chargePoint) * lambda + chargePoint - curPoint;
 
-    }
-    return pos;
+    //}
+    //return curPoint;
 }
 
 bool ScribbleArea::powerLineCrossChargeOrBorder(const QVector2D lastPoint)
 {
-    if (lastPoint.x() > this->width() || lastPoint.x() < 0 || lastPoint.y() > this->height() || lastPoint.y() < 0) return false;
+    if (lastPoint.x() > 624 || lastPoint.x() < 1 || lastPoint.y() > 669 || lastPoint.y() < 1) return false;
     for (auto const& sh : shapes)
     {
         switch (sh->shapeType)
         {
         case sShape::ShapeType::POINT: {
-            if ((lastPoint - sh->vecNodes[0].pos).length() < 2) return false;
-            break;
-
-        }
+            if ((lastPoint - sh->vecNodes[0].pos).length() < 10) return false;
+            break; }
+        case sShape::ShapeType::LINE: {
+            for (auto const& pts : sh->allPoints)
+                if ((lastPoint - *pts).length() < 10) return false;
+            break; }
         }    
     }
     return true;

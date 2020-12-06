@@ -336,7 +336,8 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         float lambda = (radius + lengthOfFieldVector) / radius;
         QVector2D fieldPoint = ( trueField - QVector2D(event->pos())) * lambda + trueField;
         drawLineBetween(event->pos(), fieldPoint.toPoint(), Qt::red);
-        drawText(fieldPoint.toPoint(), QString::number(trueFieldValue) + " " + QString::number(trueFieldValue));
+        drawText(fieldPoint.toPoint(), QString::number(trueFieldValue));
+        drawText(QPoint(50,50), " x " + QString::number(event->pos().x()) + " y " + QString::number(event->pos().y()));
         QList<QVector2D> pointsOfPowerLine;
         
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
@@ -344,15 +345,22 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         while (true) // a lot of breaks, all situations
         {
             QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLine.back());
-            
-            if (!powerLineCrossChargeOrBorder(tempPoint)) break;
+            drawText(tempPoint.toPoint(), QString::number(debugCount));
+            if (!powerLineCrossChargeOrBorder(tempPoint)) {
+                drawRectangle(tempPoint.toPoint()); break;
+            }
 
             pointsOfPowerLine.push_back(tempPoint);
             debugCount++;
-            if (debugCount > 10000) break;
+            drawRectangle(tempPoint.toPoint(), Qt::darkMagenta, 5);
+            if (debugCount > 100) {
+                drawRectangle(tempPoint.toPoint(), Qt::darkRed); 
+                drawText(tempPoint.toPoint(), QString::number(debugCount));
+                break;
+            }
         } 
         for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
-        pointsOfPowerLine.clear();
+        /*pointsOfPowerLine.clear();
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
         while (true) // a lot of breaks, all situations
         {
@@ -363,8 +371,8 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
             pointsOfPowerLine.push_back(tempPoint);
             debugCount++;
             if (debugCount > 10000) break;
-        }
-        for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
+        }*/
+        //for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
         break;
     }
     }
