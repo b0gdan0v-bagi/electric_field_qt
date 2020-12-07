@@ -296,7 +296,7 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
                     float minField = sh->charge / pow(qMax(this->width(), this->height()),2);
                     float maxField = sh->charge; // /radius = 1
                     QColor lineColor = floatToRgb(minField, maxField, field);
-                    drawLineBetween(event->pos(), fieldPoint.toPoint(), lineColor);
+                    //drawLineBetween(event->pos(), fieldPoint.toPoint(), lineColor);
                     lambda = (radius + lengthOfFieldVector) / radius;
                     trueField+= fieldPoint - QVector2D(event->pos());
                     trueFieldValue += field;
@@ -312,7 +312,7 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
                         float lengthOfFieldVector = (sh->charge > 0) ? 50 : -50;
                         float lambda = (radius + lengthOfFieldVector) / radius;
                         QVector2D fieldPoint = (QVector2D(event->pos()) - *pts) * lambda + *pts;
-                        drawLineBetween(event->pos(), fieldPoint.toPoint());
+                        //drawLineBetween(event->pos(), fieldPoint.toPoint());
                         trueField += fieldPoint - QVector2D(event->pos());
 
                         //res += plusFieldInPointByPoint(start, *pts, sh->chargePerPoint);
@@ -335,27 +335,26 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         float radius = (trueField - QVector2D(event->pos())).length();
         float lambda = (radius + lengthOfFieldVector) / radius;
         QVector2D fieldPoint = ( trueField - QVector2D(event->pos())) * lambda + trueField;
-        drawLineBetween(event->pos(), fieldPoint.toPoint(), Qt::red);
-        drawText(fieldPoint.toPoint(), QString::number(trueFieldValue));
-        drawText(QPoint(50,50), " x " + QString::number(event->pos().x()) + " y " + QString::number(event->pos().y()));
+        //drawLineBetween(event->pos(), fieldPoint.toPoint(), Qt::red);
+        //drawText(fieldPoint.toPoint(), QString::number(trueFieldValue));
+        //drawText(QPoint(50,50), " x " + QString::number(event->pos().x()) + " y " + QString::number(event->pos().y()));
+        //drawText(QPoint(50, 100), "field " + QString::number(trueFieldValue));
+        drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
         QList<QVector2D> pointsOfPowerLine;
+
+        
         
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
         int debugCount = 0;
-        while (true) // a lot of breaks, all situations
+        while (true) 
         {
             QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLine.back());
-            drawText(tempPoint.toPoint(), QString::number(debugCount));
-            if (!powerLineCrossChargeOrBorder(tempPoint)) {
-                drawRectangle(tempPoint.toPoint()); break;
-            }
-
+            if (powerLineCrossChargeOrBorder(tempPoint)) break;
             pointsOfPowerLine.push_back(tempPoint);
             debugCount++;
             drawRectangle(tempPoint.toPoint(), Qt::darkMagenta, 5);
-            if (debugCount > 100) {
+            if (debugCount > 10000) {
                 drawRectangle(tempPoint.toPoint(), Qt::darkRed); 
-                drawText(tempPoint.toPoint(), QString::number(debugCount));
                 break;
             }
         } 

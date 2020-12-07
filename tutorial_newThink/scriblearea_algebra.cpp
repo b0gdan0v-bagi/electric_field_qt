@@ -16,58 +16,51 @@ QVector2D ScribbleArea::findIntersectLineNormal(QVector2D line_p1, QVector2D lin
 
 QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
 {
-    QVector2D res = curPoint;
+    QVector2D res;
     float trueFieldValue = 0;
-    float const koef = 200.f; //debug, field ampf on screen
+    float const koef = 1000.f; //debug, field ampf on screen
     for (auto const& sh : shapes)
         switch (sh->shapeType)
         {
         case sShape::ShapeType::POINT: {
             float radius = (sh->vecNodes[0].pos - QVector2D(curPoint)).length();
-            //if (radius > 3)
-            //{
-                //res += (QVector2D(curPoint) - chargePoint) * lambda + chargePoint - QVector2D(curPoint);
+            if (radius != 0)
+            {
                 res += plusFieldInPointByPoint(curPoint, sh->vecNodes[0].pos, sh->charge);
                 trueFieldValue += sh->charge / pow(radius / koef, 2);
-            //}
+            }
             break; }
         case sShape::ShapeType::LINE:
         {
             for (auto const pts : sh->allPoints)
             {
                 float radius = (*pts - QVector2D(curPoint)).length();
-               // if (radius > 3) {
+                if (radius != 0) {
                     trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
                     res += plusFieldInPointByPoint(curPoint, *pts, sh->chargePerPoint);
-              //  }
+                }
             }
-
             break;
         }
         }
-    float lengthOfFieldVector = (trueFieldValue > 0) ? 10 : -10;
-    float radius = (res - QVector2D(curPoint)).length();
-    float lambda = (radius + lengthOfFieldVector) / radius;
-    res = (res - QVector2D(curPoint)) * lambda + res;
-
+    res *= 1.f / res.length(); 
+    res += curPoint;
     return res;
 }
 
 QVector2D ScribbleArea::plusFieldInPointByPoint(const QVector2D curPoint, const QVector2D chargePoint, const float charge)
 {
-    float radius = (chargePoint - QVector2D(curPoint)).length();
-    //if (radius > 3) {
-        float const koef = 200.f;
-        float field = charge / pow(radius / koef, 2);
-        float lengthOfFieldVector = (charge > 0) ? 10 : -10;
-        float lambda = (radius + field) / radius;
-
-        lambda = (radius + lengthOfFieldVector) / radius;
-
-        return (curPoint - chargePoint) * lambda + chargePoint - curPoint;
-
-    //}
-    //return curPoint;
+    QVector2D radiusVector = curPoint - chargePoint;
+    float radius = radiusVector.length();
+    float const koef = 1000.f; 
+    float field = 0;
+    if (radius != 0)
+    {
+        field = charge / pow(radius / koef, 2);
+        if (field > 0) radiusVector *= (radius + field) / radius;
+        else radiusVector *= -1 * (radius - field) / radius;
+    }
+    return radiusVector;
 }
 
 bool ScribbleArea::powerLineCrossChargeOrBorder(const QVector2D lastPoint)
@@ -78,15 +71,15 @@ bool ScribbleArea::powerLineCrossChargeOrBorder(const QVector2D lastPoint)
         switch (sh->shapeType)
         {
         case sShape::ShapeType::POINT: {
-            if ((lastPoint - sh->vecNodes[0].pos).length() < 10) return false;
+            if ((lastPoint - sh->vecNodes[0].pos).length() < 10) return true;
             break; }
         case sShape::ShapeType::LINE: {
             for (auto const& pts : sh->allPoints)
-                if ((lastPoint - *pts).length() < 10) return false;
+                if ((lastPoint - *pts).length() < 10) return true;
             break; }
         }    
     }
-    return true;
+    return false;
 }
 
 //drawRectangle(intersectPoint.toPoint());
