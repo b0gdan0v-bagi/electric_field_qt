@@ -48,6 +48,9 @@
     <ClCompile Include="scriblearea_algebra.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="scribblearea.h">

@@ -1,17 +1,5 @@
-#include <QtWidgets>
-#include "qcolor.h"
-#if defined(QT_PRINTSUPPORT_LIB)
-#include <QtPrintSupport/qtprintsupportglobal.h>
-#if QT_CONFIG(printdialog)
-#include <QPrinter>
-#include <QPrintDialog>
-#endif
-#endif
-
-#include "qdebug.h"
-
 #include "scribblearea.h"
-#include <algorithm>
+
 
 ScribbleArea::ScribbleArea(QWidget* parent)
     : QWidget(parent), QObject(parent)
@@ -28,23 +16,6 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     scribblemodes = NONE; // test
     nNodes = 2;
     setMouseTracking(true);
-    //drawRectangle(QPoint(this->size().width(), this->size().height()));
-    //drawRectangle(QPoint(10, 10));
-    //this->setBaseSize(500, 500);
-    //shapes.push_back(new sPoint(QPoint(this->size().width() / 2, this->size().height() / 2)));
-    //for (int i=0;i<width();i++)
-    //    for (int j=0;j<height();j++)
-            //shapes.push_back(new sPoint(QPoint(i*50 , j*50 )));
-    
-    //QColor(Qrbg 2);
-    /*int testx_1 = 100 + width() / 4;
-    int testx_2 = 200 + 3*width() / 4;
-    int testy_1 = 100+10*height() / 2;
-    int testy_2 = 100 + 10*height() / 2;
-    shapes.push_back(new sPoint(QPoint(testx_1, testy_1)));
-    shapes.push_back(new sPoint(QPoint(testx_2, testy_2), -1.f));
-    */
-
     updateShapes();
 }
 
@@ -116,9 +87,7 @@ void ScribbleArea::calculatePotencial()
     
     akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot) + " avg " + QString::number(avgPot));
     akaDebug.exec();
-    
 
-    //float const maxV = (float)pow(256, 3);
     float const maxV = 255;
     for (int y = 0; y < height(); y++)
     {
@@ -146,46 +115,7 @@ QColor ScribbleArea::floatToRgb(float minValue, float maxValue, float value) {
      int blue = (int)(std::max(0.f, 255 * (1 - ratio)));
      int green = 255 - blue - red;
      return QColor( red,green,blue, 255);
-    /*float r = calc;
-    float g = (int)(calc * scale) % 1;
-    r -= g / scale;
-    float b = (int)(calc * scale * scale) % 1;
-    g -= b / scale;
-    return  QVector3D(r, g, b);*/
-
 }
-
-void ScribbleArea::calcEqPot(QPoint& point)
-{
-    //findEqvivalent = false;
-    //QMessageBox akaDebug;
-    //akaDebug.setText("x = " + QString::number(point.x()) + " y = " + QString::number(point.y()));
-    //akaDebug.exec();
-    QPainter painter(&image);
-    painter.setPen(QPen(Qt::red,1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    float potToFind = arrayOfPotencials[point.y()][point.x()];
-    float precision = 1; // %
-    for (int y = 0; y < height(); y++)
-        for (int x = 0; x < width(); x++)
-        {
-            if (potToFind > 0) {
-                if (arrayOfPotencials[y][x] <= potToFind * (1 + precision / 100)
-                    && arrayOfPotencials[y][x] >= potToFind * (1 - precision / 100))
-                {
-                    painter.drawPoint(x, y);
-                }
-            }
-            else {
-                if (arrayOfPotencials[y][x] >= potToFind * (1 + precision / 100)
-                    && arrayOfPotencials[y][x] <= potToFind * (1 - precision / 100))
-                {
-                    painter.drawPoint(x, y);
-                }
-            }
-        }
-    update();
-}
-
 
 
 // If a mouse button is pressed check if it was the
@@ -276,46 +206,13 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         QVector2D mousePosVector(event->pos());
         float trueFieldValue = 0;
         updateShapes();
-
-        //drawRectangle(event->pos(), Qt::black);
-
-        //QVector2D fieldPoint = ( trueField - QVector2D(event->pos())) * lambda + trueField;
-        //drawLineBetween(event->pos(), fieldPoint.toPoint(), Qt::red);
-        //drawText(fieldPoint.toPoint(), QString::number(trueFieldValue));
-        //drawText(QPoint(50,50), " x " + QString::number(event->pos().x()) + " y " + QString::number(event->pos().y()));
-        //drawText(QPoint(50, 100), "field " + QString::number(trueFieldValue));
         QVector2D fieldPoint = summaryFieldInPoint(mousePosVector);
         fieldPoint -= mousePosVector;
         fieldPoint *= 50 / fieldPoint.length();
         fieldPoint += mousePosVector;
         drawLineBetween(mousePosVector.toPoint(), fieldPoint.toPoint(), Qt::red);
+        drawArrow(mousePosVector, fieldPoint);
 
-        QVector2D p0 = mousePosVector;
-        QVector2D p1 = fieldPoint;
-        float head_length = 10;
-        float head_width = 5;
-        const float dx = static_cast<float>(p1.x() - p0.x());
-        const float dy = static_cast<float>(p1.y() - p0.y());
-        const auto length = std::sqrt(dx * dx + dy * dy);
-        //if (head_length < 1 || length < head_length) return;
-
-        // ux,uy is a unit vector parallel to the line.
-        const auto ux = dx / length;
-        const auto uy = dy / length;
-
-        // vx,vy is a unit vector perpendicular to ux,uy
-        const auto vx = -uy;
-        const auto vy = ux;
-
-        const auto half_width = 0.5f * head_width;
-
-        QPoint testPoint1(p1.x() - head_length * ux + half_width * vx, p1.y() - head_length * uy + half_width * vy);
-        QPoint testPoint2(p1.x() - head_length * ux - half_width * vx, p1.y() - head_length * uy - half_width * vy);
-
-        drawLineBetween(fieldPoint.toPoint(), testPoint1);
-        drawLineBetween(fieldPoint.toPoint(), testPoint2);
-        //drawRectangle(testPoint1);
-        //drawRectangle(testPoint2);
         QVector2D fieldPointReverse = summaryFieldInPoint(mousePosVector, true);
         fieldPointReverse -= mousePosVector;
         fieldPointReverse *= 50 / fieldPointReverse.length();
@@ -323,8 +220,8 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         //drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
         drawLineBetween(mousePosVector.toPoint(), fieldPointReverse.toPoint(), Qt::black);
 
-        QList<QVector2D> pointsOfPowerLine;
-        QList<QVector2D> pointsOfPowerLineReverse;
+        QVector<QVector2D> pointsOfPowerLine;
+        QVector<QVector2D> pointsOfPowerLineReverse;
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
         
         int debugCount = 0;
@@ -347,8 +244,10 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
             debugCount++;
             if (debugCount > 10000) { drawRectangle(tempPoint.toPoint(), Qt::darkRed); break; }
         }
-       // for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
-       // for (int i = 0; i < pointsOfPowerLineReverse.size() - 1; i++) drawLineBetween(pointsOfPowerLineReverse[i].toPoint(), pointsOfPowerLineReverse[i + 1].toPoint(), Qt::darkMagenta);
+        drawPowerLine(mousePosVector, 10000, Qt::black, false);
+        drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line
+        //for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
+        //for (int i = 0; i < pointsOfPowerLineReverse.size() - 1; i++) drawLineBetween(pointsOfPowerLineReverse[i].toPoint(), pointsOfPowerLineReverse[i + 1].toPoint(), Qt::darkMagenta);
         /*pointsOfPowerLine.clear();
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
         while (true) // a lot of breaks, all situations
@@ -431,66 +330,7 @@ void ScribbleArea::drawCylTo(QPoint &point, qreal WIDTH = 10)
     update();
 }
 
-void ScribbleArea::drawRectangle(QPoint& point, QColor pointColor, qreal pointWidth)
-{
-    QPainter painter(&image);
-    painter.setPen(QPen(pointColor, pointWidth, Qt::SolidLine, Qt::RoundCap,
-        Qt::RoundJoin));
-    painter.drawPoint(point);
 
-    // Call to update the rectangular space where we drew
-    update();
-}
-
-void ScribbleArea::drawLineTo(const QPoint& endPoint)
-{
-    // Used to draw on the widget
-    QPainter painter(&image);
-
-    // Set the current settings for the pen
-    painter.setPen(QPen(myPenColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
-        Qt::RoundJoin));
-
-    // Draw a line from the last registered point to the current
-    painter.drawLine(lastPoint, endPoint);
-
-    // Set that the image hasn't been saved
-    modified = true;
-
-    int rad = (myPenWidth / 2) + 2;
-
-    // Call to update the rectangular space where we drew
-    update(QRect(lastPoint, endPoint).normalized()
-        .adjusted(-rad, -rad, +rad, +rad));
-
-    // Update the last position where we left off drawing
-    lastPoint = endPoint;
-}
-
-void ScribbleArea::drawLineBetween(const QPoint& startPoint, const QPoint& endPoint, const QColor lineColor)
-{
-    // Used to draw on the widget
-    QPainter painter(&image);
-
-    // Set the current settings for the pen
-    painter.setPen(QPen(lineColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
-        Qt::RoundJoin));
-
-    // Draw a line from the last registered point to the current
-    painter.drawLine(startPoint, endPoint);
-
-    // Set that the image hasn't been saved
-    modified = true;
-
-    int rad = (myPenWidth / 2) + 2;
-
-    // Call to update the rectangular space where we drew
-    update(QRect(startPoint, endPoint).normalized()
-        .adjusted(-rad, -rad, +rad, +rad));
-
-    // Update the last position where we left off drawing
-    lastPoint = endPoint;
-}
 
 
 

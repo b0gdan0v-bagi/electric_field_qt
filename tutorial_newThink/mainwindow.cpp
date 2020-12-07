@@ -31,6 +31,7 @@ MainWindow::MainWindow()
     chargeLE = new QLineEdit(this);
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
     reverseChargeBut = new QPushButton("Reverse charge", this);
+    drawElFieldMapBut = new QPushButton("draw field vectors", this);
 
     chargeLE->setText(QString::number(1));
     
@@ -60,6 +61,7 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(chargeLabel,9,0);
     controlsLayout->addWidget(chargeLE,9,1,1,2);
     controlsLayout->addWidget(reverseChargeBut,9,4);
+    controlsLayout->addWidget(drawElFieldMapBut,10,0);
     controlsLayout->addWidget(sListWidget,0,2,7,3);
     
 
@@ -79,6 +81,7 @@ MainWindow::MainWindow()
     connect(showEqBut, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
     connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
+    connect(drawElFieldMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->drawElFieldAllArea(); });
 
     
     //setLayout(hbox);

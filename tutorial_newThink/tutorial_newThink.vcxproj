@@ -15,6 +15,7 @@
     <QtMoc Include="scribblearea.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="draw.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainwindow.cpp" />
     <ClCompile Include="mainWindowUIcontrolos.cpp" />

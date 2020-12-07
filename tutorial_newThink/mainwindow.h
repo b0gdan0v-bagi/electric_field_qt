@@ -8,6 +8,7 @@
 #include "sShape.h"
 #include "centralWidget.h"
 #include <QListWidget>
+
 //#include "vec2D.h"
 
 
@@ -63,6 +64,7 @@ private:
     QPushButton* updateBut;
     QPushButton* dirBut;
     QPushButton* reverseChargeBut;
+    QPushButton* drawElFieldMapBut;
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
     int nNodes;
