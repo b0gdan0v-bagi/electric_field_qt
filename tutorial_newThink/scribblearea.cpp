@@ -273,78 +273,60 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         break;
     case ScribbleArea::DIRECTIONS:
     {
-        QVector2D trueField(event->pos());
+        QVector2D mousePosVector(event->pos());
         float trueFieldValue = 0;
         updateShapes();
-        float const koef = 100.f;
-        for (auto const& sh : shapes)
-            switch (sh->shapeType)
-            {
-            case sShape::ShapeType::POINT: {
-                if ((QVector2D(event->pos()) - sh->vecNodes[0].pos).length() < 10)
-                    drawRectangle(sh->vecNodes[0].pos.toPoint(), sh->getColor(), 25);
 
-                QVector2D chargePoint = sh->vecNodes.back().pos;
-                drawLineBetween(chargePoint.toPoint(), event->pos());
-                float radius = (chargePoint - QVector2D(event->pos())).length();
-                if (radius > 3) {
-                    
-                    float field = sh->charge / pow(radius / koef, 2);
-                    float lengthOfFieldVector = (sh->charge > 0) ? 50 : -50;
-                    float lambda = (radius+ lengthOfFieldVector)/radius;
-                    QVector2D fieldPoint = (QVector2D(event->pos())-chargePoint)*lambda+chargePoint;
-                    float minField = sh->charge / pow(qMax(this->width(), this->height()),2);
-                    float maxField = sh->charge; // /radius = 1
-                    QColor lineColor = floatToRgb(minField, maxField, field);
-                    //drawLineBetween(event->pos(), fieldPoint.toPoint(), lineColor);
-                    lambda = (radius + lengthOfFieldVector) / radius;
-                    trueField+= fieldPoint - QVector2D(event->pos());
-                    trueFieldValue += field;
-                }
-                break; }
-            case sShape::ShapeType::LINE:
-            {
-                for (auto const pts : sh->allPoints)
-                {
-                    float radius = (*pts - QVector2D(event->pos())).length();
-                    if (radius > 3) {
-                        trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
-                        float lengthOfFieldVector = (sh->charge > 0) ? 50 : -50;
-                        float lambda = (radius + lengthOfFieldVector) / radius;
-                        QVector2D fieldPoint = (QVector2D(event->pos()) - *pts) * lambda + *pts;
-                        //drawLineBetween(event->pos(), fieldPoint.toPoint());
-                        trueField += fieldPoint - QVector2D(event->pos());
-
-                        //res += plusFieldInPointByPoint(start, *pts, sh->chargePerPoint);
-                    }
-                }
-                /*QPoint intersectPoint = findIntersectLineNormal(sh->vecNodes[0].pos, sh->vecNodes[1].pos, QVector2D(event->pos())).toPoint();
-                float lengthToP1 = (sh->vecNodes[0].pos - QVector2D(intersectPoint)).length();
-                float lengthToP2 = (sh->vecNodes[1].pos - QVector2D(intersectPoint)).length();
-                float lengthLine = (sh->vecNodes[0].pos - sh->vecNodes[1].pos).length();
-                if (lengthToP1 > lengthLine) drawLineBetween(intersectPoint, sh->vecNodes[1].pos.toPoint());
-                if (lengthToP2 > lengthLine) drawLineBetween(intersectPoint, sh->vecNodes[0].pos.toPoint());
-                drawLineBetween(intersectPoint, event->pos());
-                drawRectangle(intersectPoint, Qt::black);*/
-                
-                break;
-            }
-            }
         //drawRectangle(event->pos(), Qt::black);
-        float lengthOfFieldVector = (trueFieldValue > 0) ? 50 : -50;
-        float radius = (trueField - QVector2D(event->pos())).length();
-        float lambda = (radius + lengthOfFieldVector) / radius;
-        QVector2D fieldPoint = ( trueField - QVector2D(event->pos())) * lambda + trueField;
+
+        //QVector2D fieldPoint = ( trueField - QVector2D(event->pos())) * lambda + trueField;
         //drawLineBetween(event->pos(), fieldPoint.toPoint(), Qt::red);
         //drawText(fieldPoint.toPoint(), QString::number(trueFieldValue));
         //drawText(QPoint(50,50), " x " + QString::number(event->pos().x()) + " y " + QString::number(event->pos().y()));
         //drawText(QPoint(50, 100), "field " + QString::number(trueFieldValue));
-        drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
-        QList<QVector2D> pointsOfPowerLine;
+        QVector2D fieldPoint = summaryFieldInPoint(mousePosVector);
+        fieldPoint -= mousePosVector;
+        fieldPoint *= 50 / fieldPoint.length();
+        fieldPoint += mousePosVector;
+        drawLineBetween(mousePosVector.toPoint(), fieldPoint.toPoint(), Qt::red);
 
-        
-        
+        QVector2D p0 = mousePosVector;
+        QVector2D p1 = fieldPoint;
+        float head_length = 10;
+        float head_width = 5;
+        const float dx = static_cast<float>(p1.x() - p0.x());
+        const float dy = static_cast<float>(p1.y() - p0.y());
+        const auto length = std::sqrt(dx * dx + dy * dy);
+        //if (head_length < 1 || length < head_length) return;
+
+        // ux,uy is a unit vector parallel to the line.
+        const auto ux = dx / length;
+        const auto uy = dy / length;
+
+        // vx,vy is a unit vector perpendicular to ux,uy
+        const auto vx = -uy;
+        const auto vy = ux;
+
+        const auto half_width = 0.5f * head_width;
+
+        QPoint testPoint1(p1.x() - head_length * ux + half_width * vx, p1.y() - head_length * uy + half_width * vy);
+        QPoint testPoint2(p1.x() - head_length * ux - half_width * vx, p1.y() - head_length * uy - half_width * vy);
+
+        drawLineBetween(fieldPoint.toPoint(), testPoint1);
+        drawLineBetween(fieldPoint.toPoint(), testPoint2);
+        //drawRectangle(testPoint1);
+        //drawRectangle(testPoint2);
+        QVector2D fieldPointReverse = summaryFieldInPoint(mousePosVector, true);
+        fieldPointReverse -= mousePosVector;
+        fieldPointReverse *= 50 / fieldPointReverse.length();
+        fieldPointReverse += mousePosVector;
+        //drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
+        drawLineBetween(mousePosVector.toPoint(), fieldPointReverse.toPoint(), Qt::black);
+
+        QList<QVector2D> pointsOfPowerLine;
+        QList<QVector2D> pointsOfPowerLineReverse;
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
+        
         int debugCount = 0;
         while (true) 
         {
@@ -352,13 +334,21 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
             if (powerLineCrossChargeOrBorder(tempPoint)) break;
             pointsOfPowerLine.push_back(tempPoint);
             debugCount++;
-            drawRectangle(tempPoint.toPoint(), Qt::darkMagenta, 5);
-            if (debugCount > 10000) {
-                drawRectangle(tempPoint.toPoint(), Qt::darkRed); 
-                break;
-            }
-        } 
-        for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
+            if (debugCount > 10000) {drawRectangle(tempPoint.toPoint(), Qt::darkRed); break; }
+        }
+        pointsOfPowerLineReverse.push_back(summaryFieldInPoint(mousePosVector, true));
+        debugCount = 0;
+        while (true)
+        {
+            QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLineReverse.back(), true);
+            if (powerLineCrossChargeOrBorder(tempPoint)) break;
+            pointsOfPowerLineReverse.push_back(tempPoint);
+            //drawRectangle(tempPoint.toPoint(), Qt::black, 8);
+            debugCount++;
+            if (debugCount > 10000) { drawRectangle(tempPoint.toPoint(), Qt::darkRed); break; }
+        }
+       // for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
+       // for (int i = 0; i < pointsOfPowerLineReverse.size() - 1; i++) drawLineBetween(pointsOfPowerLineReverse[i].toPoint(), pointsOfPowerLineReverse[i + 1].toPoint(), Qt::darkMagenta);
         /*pointsOfPowerLine.clear();
         pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
         while (true) // a lot of breaks, all situations
@@ -447,6 +437,7 @@ void ScribbleArea::drawRectangle(QPoint& point, QColor pointColor, qreal pointWi
     painter.setPen(QPen(pointColor, pointWidth, Qt::SolidLine, Qt::RoundCap,
         Qt::RoundJoin));
     painter.drawPoint(point);
+
     // Call to update the rectangular space where we drew
     update();
 }

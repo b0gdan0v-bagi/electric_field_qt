@@ -56,7 +56,7 @@ public:
     bool findEqvivalent = { false };
     void calcEqPot(QPoint& point);
     float chargeToAdd = { 1 };
-    QVector2D summaryFieldInPoint(const QVector2D start);
+    QVector2D summaryFieldInPoint(const QVector2D start, bool reverse = false);
     QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
     bool powerLineCrossChargeOrBorder(const QVector2D lastPoint);
 

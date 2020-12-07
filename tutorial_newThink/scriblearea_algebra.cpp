@@ -14,7 +14,7 @@ QVector2D ScribbleArea::findIntersectLineNormal(QVector2D line_p1, QVector2D lin
     else return QVector2D((-C1 * B2 + B1 * C2) / det, (A2 * C1 - A1 * C2) / det); //inverse matrix * vector {-C1,-C2}
 }
 
-QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
+QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool reverse)
 {
     QVector2D res;
     float trueFieldValue = 0;
@@ -23,7 +23,7 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
         switch (sh->shapeType)
         {
         case sShape::ShapeType::POINT: {
-            float radius = (sh->vecNodes[0].pos - QVector2D(curPoint)).length();
+            float radius = (sh->vecNodes[0].pos - curPoint).length();
             if (radius != 0)
             {
                 res += plusFieldInPointByPoint(curPoint, sh->vecNodes[0].pos, sh->charge);
@@ -34,7 +34,7 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
         {
             for (auto const pts : sh->allPoints)
             {
-                float radius = (*pts - QVector2D(curPoint)).length();
+                float radius = (*pts - curPoint).length();
                 if (radius != 0) {
                     trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
                     res += plusFieldInPointByPoint(curPoint, *pts, sh->chargePerPoint);
@@ -43,7 +43,9 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint)
             break;
         }
         }
-    res *= 1.f / res.length(); 
+    if (reverse) res *= -1.f / res.length();
+    else res *= 1.f / res.length();
+    
     res += curPoint;
     return res;
 }
