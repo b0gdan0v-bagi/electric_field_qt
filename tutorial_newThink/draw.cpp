@@ -59,7 +59,7 @@ void ScribbleArea::drawLineBetween(const QPoint& startPoint, const QPoint& endPo
 
 }
 
-void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoint, float head_length, const float head_width, const QColor lineColor)
+void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoint, float head_length, const float head_width, const QColor lineColor, const bool drawBody)
 {
     const float dx = toPoint.x() - fromPoint.x();
     const float dy = toPoint.y() - fromPoint.y();
@@ -81,7 +81,7 @@ void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoin
     QPainter painter(&image);
     painter.setPen(QPen(lineColor, myPenWidth, Qt::SolidLine, Qt::RoundCap,
         Qt::RoundJoin));
-    painter.drawLine(fromPoint.toPoint(), toPoint.toPoint());
+    if (drawBody) painter.drawLine(fromPoint.toPoint(), toPoint.toPoint());
     painter.drawLine(arrowEnd_1, toPoint.toPoint());
     painter.drawLine(arrowEnd_2, toPoint.toPoint());
     int rad = (myPenWidth / 2) + 2;
@@ -132,8 +132,9 @@ void ScribbleArea::drawPowerLine(QVector2D& startPos, const int maxPts, const QC
 
     }
     drawLines(pointsOfPowerLine, lineColor);
-    if (!reverse)
-        if (pointsOfPowerLine.size() > 15)  drawArrow(pointsOfPowerLine[pointsOfPowerLine.size()-12], pointsOfPowerLine.back()); 
+    if (pointsOfPowerLine.size() > 15)
+        if (!reverse) drawArrow(pointsOfPowerLine[pointsOfPowerLine.size()-12], pointsOfPowerLine.back(),10.f,5.f,Qt::black,false);
+        else drawArrow(pointsOfPowerLine[12],pointsOfPowerLine.first(), 10.f, 5.f, Qt::black, false);
     //for (QVector<QVector2D*>::iterator pts = pointsOfPowerLine.begin();pts!=pointsOfPowerLine.end();pts++)
         //delete* pts;
 }
@@ -153,10 +154,11 @@ void ScribbleArea::drawLines(QVector<QVector2D>& pointsToDraw, const QColor &lin
 
 void ScribbleArea::drawElFieldAllArea()
 {
-    for (int y = 10; y < height(); y+=40)
-        for (int x = 10; x < width(); x+=40)
+    for (int y = 10; y < height(); y+= drawElFieldScale)
+        for (int x = 10; x < width(); x+= drawElFieldScale)
         {
-            drawPowerLine(QVector2D(x, y), 30);
+            drawPowerLine(QVector2D(x, y), drawElFieldScale/2);
+            //drawPowerLine(QVector2D(x, y), 15,Qt::black,true);
         }
 
 }

@@ -41,6 +41,7 @@ void ScribbleArea::updateShapes()
             break; }
         }
     }
+    if (drawElField) drawElFieldAllArea();
 }
 
 void ScribbleArea::calculatePotencial()

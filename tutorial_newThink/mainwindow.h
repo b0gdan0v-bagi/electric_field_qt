@@ -65,10 +65,11 @@ private:
     QPushButton* updateBut;
     QPushButton* dirBut;
     QPushButton* reverseChargeBut;
-    QPushButton* drawElFieldMapBut;
     QPushButton* deleteShapeBut;
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
+    QCheckBox* drawElFieldCB;
+    QSpinBox* scaleOfDrawElFieldSB;
     int nNodes;
 
     QPushButton* potMapBut;
