@@ -60,11 +60,14 @@ public:
     QColor floatToRgb(float minValue, float maxValue, float value);
 
     bool findEqvivalent = { false };
+    float minPot;
+    float avgPot;
+    float maxPot;
     void calcEqPot(QPoint& point);
     void drawPowerLine(QVector2D& startPos, const int maxPts = 10000, const QColor& lineColor = Qt::black, const bool reverse = false);
 
     void drawLines(QVector<QVector2D>& pointsToDraw, const QColor& lineColor = Qt::black);
-
+    bool drawPowerLinesAroundCharge(const QVector2D &chargePoint);
     float chargeToAdd = { 1 };
     QVector2D summaryFieldInPoint(const QVector2D start, bool reverse = false);
     QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
@@ -98,6 +101,7 @@ public: // for test
     void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint, const QColor lineColor = Qt::black);
     void drawArrow(const QVector2D& fromPoint, const QVector2D& toPoint, const float head_length = 10.f, const float head_width = 5.f, const QColor lineColor = Qt::black);
     void drawElFieldAllArea();
+    void drawPotencialAllArea();
 private:
     QVector2D findIntersectLineNormal(QVector2D line_p1, QVector2D line_p2, QVector2D outer_p);
     void resizeImage(QImage* image, const QSize& newSize);

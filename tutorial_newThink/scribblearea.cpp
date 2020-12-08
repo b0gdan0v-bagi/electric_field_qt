@@ -47,9 +47,9 @@ void ScribbleArea::calculatePotencial()
 {
     arrayOfPotencials.clear();
     float radius;
-    float minPot = 0;
-    float avgPot = 0;
-    float maxPot = minPot;
+    minPot = 0;
+    avgPot = 0;
+    maxPot = 0;
     QMessageBox akaDebug;
     for (int y = 0; y < height(); y++)
     {
@@ -83,30 +83,11 @@ void ScribbleArea::calculatePotencial()
         arrayOfPotencials.push_back(tempPot);
     }
     avgPot /= ( height() * width());
-    QPainter painter(&image);
     
-    akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot) + " avg " + QString::number(avgPot));
-    akaDebug.exec();
-
-    float const maxV = 255;
-    for (int y = 0; y < height(); y++)
-    {
-        for (int x = 0; x < width(); x++)
-        {
-            
-            //painter.setPen(QPen(QColor::fromRgb(maxV,
-            //    maxV - maxV* (   (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot)),
-            float normalizedPot = (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot);
-            //QColor colorHeatMap = floatToRgb(0, 1, normalizedPot);
-            QColor colorHeatMap = floatToRgb(minPot, maxPot, arrayOfPotencials[y][x]);
-
-            painter.setPen(QPen(
-                colorHeatMap,
-                1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-            painter.drawPoint(x, y);
-        }
-    }
-    update();   
+    
+    //akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot) + " avg " + QString::number(avgPot));
+    //akaDebug.exec();
+    drawPotencialAllArea();
 }
 
 QColor ScribbleArea::floatToRgb(float minValue, float maxValue, float value) {
@@ -203,64 +184,27 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         break;
     case ScribbleArea::DIRECTIONS:
     {
+        
         QVector2D mousePosVector(event->pos());
+        if (drawPowerLinesAroundCharge(mousePosVector)) return;
         float trueFieldValue = 0;
         updateShapes();
         QVector2D fieldPoint = summaryFieldInPoint(mousePosVector);
         fieldPoint -= mousePosVector;
         fieldPoint *= 50 / fieldPoint.length();
         fieldPoint += mousePosVector;
-        drawLineBetween(mousePosVector.toPoint(), fieldPoint.toPoint(), Qt::red);
         drawArrow(mousePosVector, fieldPoint);
 
         QVector2D fieldPointReverse = summaryFieldInPoint(mousePosVector, true);
         fieldPointReverse -= mousePosVector;
         fieldPointReverse *= 50 / fieldPointReverse.length();
         fieldPointReverse += mousePosVector;
-        //drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
+        drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
+
         drawLineBetween(mousePosVector.toPoint(), fieldPointReverse.toPoint(), Qt::black);
-
-        QVector<QVector2D> pointsOfPowerLine;
-        QVector<QVector2D> pointsOfPowerLineReverse;
-        pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
-        
-        int debugCount = 0;
-        while (true) 
-        {
-            QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLine.back());
-            if (powerLineCrossChargeOrBorder(tempPoint)) break;
-            pointsOfPowerLine.push_back(tempPoint);
-            debugCount++;
-            if (debugCount > 10000) {drawRectangle(tempPoint.toPoint(), Qt::darkRed); break; }
-        }
-        pointsOfPowerLineReverse.push_back(summaryFieldInPoint(mousePosVector, true));
-        debugCount = 0;
-        while (true)
-        {
-            QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLineReverse.back(), true);
-            if (powerLineCrossChargeOrBorder(tempPoint)) break;
-            pointsOfPowerLineReverse.push_back(tempPoint);
-            //drawRectangle(tempPoint.toPoint(), Qt::black, 8);
-            debugCount++;
-            if (debugCount > 10000) { drawRectangle(tempPoint.toPoint(), Qt::darkRed); break; }
-        }
         drawPowerLine(mousePosVector, 10000, Qt::black, false);
-        drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line
-        //for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
-        //for (int i = 0; i < pointsOfPowerLineReverse.size() - 1; i++) drawLineBetween(pointsOfPowerLineReverse[i].toPoint(), pointsOfPowerLineReverse[i + 1].toPoint(), Qt::darkMagenta);
-        /*pointsOfPowerLine.clear();
-        pointsOfPowerLine.push_back(summaryFieldInPoint(QVector2D(event->pos())));
-        while (true) // a lot of breaks, all situations
-        {
-            QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLine.back());
-
-            if (!powerLineCrossChargeOrBorder(tempPoint)) break;
-
-            pointsOfPowerLine.push_back(tempPoint);
-            debugCount++;
-            if (debugCount > 10000) break;
-        }*/
-        //for (int i = 0; i < pointsOfPowerLine.size() - 1; i++) drawLineBetween(pointsOfPowerLine[i].toPoint(), pointsOfPowerLine[i + 1].toPoint(), Qt::darkGreen);
+        drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line to -charges
+ 
         break;
     }
     }
@@ -329,9 +273,6 @@ void ScribbleArea::drawCylTo(QPoint &point, qreal WIDTH = 10)
     // Call to update the rectangular space where we drew
     update();
 }
-
-
-
 
 
 // When the app is resized create a new image using

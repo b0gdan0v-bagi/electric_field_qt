@@ -26,7 +26,12 @@ struct sShape
 	uint32_t nMaxNodes = 0;
 
 	enum ShapeType {POINT,LINE} shapeType;
-
+	~sShape() {
+		for (auto i = allPoints.begin(); i != allPoints.end(); i++) delete* i;
+	}
+	
+		
+	
 	// The colour of the shape
 	//olc::Pixel col = olc::GREEN;
 

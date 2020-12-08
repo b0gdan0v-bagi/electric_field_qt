@@ -52,6 +52,7 @@ private slots:
 
 private:
 
+    void deleteShape();
     QPoint vec2DtoQPoint(const vd2D& v) { return QPoint(v.x, v.y); }
     CentralWidget* centralWidget;
     QListWidget* sListWidget;
@@ -65,6 +66,7 @@ private:
     QPushButton* dirBut;
     QPushButton* reverseChargeBut;
     QPushButton* drawElFieldMapBut;
+    QPushButton* deleteShapeBut;
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
     int nNodes;

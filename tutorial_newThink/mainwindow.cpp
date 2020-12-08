@@ -32,6 +32,7 @@ MainWindow::MainWindow()
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
     reverseChargeBut = new QPushButton("Reverse charge", this);
     drawElFieldMapBut = new QPushButton("draw field vectors", this);
+    deleteShapeBut = new QPushButton("Delete selected shape", this);
 
     chargeLE->setText(QString::number(1));
     
@@ -62,6 +63,7 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(chargeLE,9,1,1,2);
     controlsLayout->addWidget(reverseChargeBut,9,4);
     controlsLayout->addWidget(drawElFieldMapBut,10,0);
+    controlsLayout->addWidget(deleteShapeBut,7,2);
     controlsLayout->addWidget(sListWidget,0,2,7,3);
     
 
@@ -82,6 +84,7 @@ MainWindow::MainWindow()
     connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
     connect(drawElFieldMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->drawElFieldAllArea(); });
+    connect(deleteShapeBut, &QPushButton::clicked, this, &MainWindow::deleteShape );
 
     
     //setLayout(hbox);
@@ -247,10 +250,22 @@ void MainWindow::updateListWidget()
         QString toAddName;
         switch (sh->shapeType)
         {
-        case 0: {toAddName = "point " + QString::number(count); break; }
-        case 1: {toAddName = "line " + QString::number(count); break; }
+        case 0: {toAddName = "point " + QString::number(count) + " charge " + QString::number(sh->charge); break; }
+        case 1: {toAddName = "line " + QString::number(count) + " charge " + QString::number(sh->charge); break; }
         } 
         sListWidget->addItem(toAddName);
         count++;
+    }
+}
+
+void MainWindow::deleteShape()
+{
+    int r = sListWidget->currentRow();
+    if (r != -1)
+    {
+        QListWidgetItem* item = sListWidget->takeItem(r);
+        scribbleArea->shapes.erase(scribbleArea->shapes.begin() + r);
+        delete item;
+        scribbleArea->updateShapes();
     }
 }

@@ -160,3 +160,43 @@ void ScribbleArea::drawElFieldAllArea()
         }
 
 }
+
+void ScribbleArea::drawPotencialAllArea()
+{
+    QPainter painter(&image);
+    float const maxV = 255;
+    for (int y = 0; y < height(); y++)
+    {
+        for (int x = 0; x < width(); x++)
+        {
+            float normalizedPot = (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot);
+            QColor colorHeatMap = floatToRgb(minPot, maxPot, arrayOfPotencials[y][x]);
+            painter.setPen(QPen(
+                colorHeatMap,
+                1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            painter.drawPoint(x, y);
+        }
+    }
+    update();
+}
+
+bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
+{
+    for (auto const& sh : shapes)
+        if (sh->shapeType == sShape::ShapeType::POINT && sh->vecNodes[0].pos.distanceToPoint(chargePoint) < 10)
+        {
+            const float PI = 3.14159265358;
+            const float roundedVectorXcoord = 15; //vector rounding around (0,0) with start coord (10,0)
+            updateShapes();
+            for (float phi = 0; phi < 2 * PI; phi += PI / 6.f)
+            {
+                QVector2D roundedVector(roundedVectorXcoord * cos(phi), roundedVectorXcoord * sin(phi));
+                roundedVector += sh->vecNodes[0].pos;
+                
+                bool chargeSign = (sh->charge < 0) ? true : false;
+                drawPowerLine(roundedVector, 10000, Qt::black, chargeSign);
+            }
+            return true;
+        }
+    return false;
+}
