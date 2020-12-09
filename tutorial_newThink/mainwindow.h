@@ -69,12 +69,13 @@ private:
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
     QCheckBox* drawElFieldCB;
-    QSpinBox* scaleOfDrawElFieldSB;
-    int nNodes;
+    QSlider* scaleOfDrawElFieldS;
+    QCheckBox* drawPotMapCB;
+    QSlider* drawPotMapS;
+
 
     QPushButton* potMapBut;
     QPushButton* showEqBut;
-    QSpinBox* testQSB;
     QPushButton* clearBut;
 
     void testColorBut();

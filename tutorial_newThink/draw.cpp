@@ -167,16 +167,21 @@ void ScribbleArea::drawPotencialAllArea()
 {
     QPainter painter(&image);
     float const maxV = 255;
-    for (int y = 0; y < height(); y++)
+    for (int y = 0; y < height(); y+=potScale)
     {
-        for (int x = 0; x < width(); x++)
+        for (int x = 0; x < width(); x+=potScale)
         {
             float normalizedPot = (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot);
             QColor colorHeatMap = floatToRgb(minPot, maxPot, arrayOfPotencials[y][x]);
             painter.setPen(QPen(
                 colorHeatMap,
-                1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-            painter.drawPoint(x, y);
+                potScale, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+            painter.drawRect(x, y, potScale, potScale);
+           // painter.drawRect()
+            /*painter.drawPoints()
+            for (int i = 0; i<potScale;i++)
+                for (int j=0; j<potScale;j++)
+                    painter.drawPoint(x+i, y+j);*/
         }
     }
     update();
@@ -201,4 +206,12 @@ bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
             return true;
         }
     return false;
+}
+
+QColor ScribbleArea::floatToRgb(float minValue, float maxValue, float value) {
+    float ratio = ratio = 2 * (value - minValue) / (maxValue - minValue);
+    int red = (int)(std::max(0.f, 255 * (ratio - 1)));
+    int blue = (int)(std::max(0.f, 255 * (1 - ratio)));
+    int green = 255 - blue - red;
+    return QColor(red, green, blue, 255);
 }

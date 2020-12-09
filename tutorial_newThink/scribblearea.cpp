@@ -10,13 +10,13 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     // Set defaults for the monitored variables
     modified = false;
     scribbling = false;
-    creatingShape = false;
     myPenWidth = 1;
     myPenColor = Qt::blue;
     scribblemodes = NONE; // test
     nNodes = 2;
     setMouseTracking(true);
     updateShapes();
+       
 }
 
 
@@ -24,6 +24,7 @@ ScribbleArea::ScribbleArea(QWidget* parent)
 void ScribbleArea::updateShapes()
 {
     clearImage();
+    
     for (auto const& sh : shapes)
     {
         switch (sh->shapeType)
@@ -41,6 +42,8 @@ void ScribbleArea::updateShapes()
             break; }
         }
     }
+    if (potShouldReCalc && drawPotMap) calculatePotencial();
+    if (!potShouldReCalc && drawPotMap) drawPotencialAllArea();
     if (drawElField) drawElFieldAllArea();
 }
 
@@ -61,11 +64,13 @@ void ScribbleArea::calculatePotencial()
             for (auto const& sh : shapes) {
                 switch (sh->shapeType)
                 {
-                case sShape::ShapeType::POINT: {
+                case sShape::ShapeType::POINT: 
+                {
                      radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
                      if (radius > 3) tempPot[x] += (sh->charge / radius); break; 
                 }
-                case sShape::ShapeType::LINE: { 
+                case sShape::ShapeType::LINE:
+                { 
                     for (auto const& pts : sh->allPoints)
                     {
                         radius = QVector2D(x, y).distanceToPoint(*pts);
@@ -73,7 +78,6 @@ void ScribbleArea::calculatePotencial()
                     }
                     break;
                 }
-                    
                 }
                
             }
@@ -84,20 +88,10 @@ void ScribbleArea::calculatePotencial()
         arrayOfPotencials.push_back(tempPot);
     }
     avgPot /= ( height() * width());
-    
-    
-    //akaDebug.setText("min = " + QString::number(minPot) + " max = " + QString::number(maxPot) + " avg " + QString::number(avgPot));
-    //akaDebug.exec();
-    drawPotencialAllArea();
+    potShouldReCalc = false;
 }
 
-QColor ScribbleArea::floatToRgb(float minValue, float maxValue, float value) {
-     float ratio = ratio = 2 * (value - minValue) / (maxValue - minValue);
-     int red = (int)(std::max(0.f, 255 * (ratio - 1)));
-     int blue = (int)(std::max(0.f, 255 * (1 - ratio)));
-     int green = 255 - blue - red;
-     return QColor( red,green,blue, 255);
-}
+
 
 
 // If a mouse button is pressed check if it was the
@@ -129,6 +123,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             {
                 nNodes++;
                 shapes.push_back(new sLine(tempPoint, QVector2D(event->pos()), chargeToAdd));
+                potShouldReCalc = true;
                // for (auto const& pts : shapes.back()->allPoints)
                //     drawRectangle(pts->toPoint());
                 scribbling = false;
@@ -137,8 +132,9 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             }
             break; 
         }
-        case ScribbleArea::SINGLE: {
+        case ScribbleArea::POINT: {
             shapes.push_back(new sPoint(QVector2D(event->pos()),chargeToAdd));
+            potShouldReCalc = true;
             updateShapes();
             break; }
         case ScribbleArea::CYLINDER:
@@ -158,6 +154,9 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
+    drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
+
+    
     switch (scribblemodes)
     {
     case ScribbleArea::NONE: {
@@ -176,7 +175,7 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
             drawRectangle(event->pos());
         }
         break; }
-    case ScribbleArea::SINGLE: {updateShapes(); drawRectangle(event->pos()); break; }
+    case ScribbleArea::POINT: {updateShapes(); drawRectangle(event->pos()); break; }
     case ScribbleArea::CYLINDER:
         break;
     case ScribbleArea::POTHEATMAP:

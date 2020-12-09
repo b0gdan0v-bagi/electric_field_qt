@@ -26,51 +26,51 @@ MainWindow::MainWindow()
     crtScribbleBut = new QPushButton("Scribble", this);
     crtSingleBut = new QPushButton("Create 1 point", this);
     dirBut = new QPushButton("Show directions", this);
-    avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
+    //avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
     chargeLabel = new QLabel("charge to add = k* ");
     chargeLE = new QLineEdit(this);
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
+    chargeLE->setText(QString::number(1));
     reverseChargeBut = new QPushButton("Reverse charge", this);
     deleteShapeBut = new QPushButton("Delete selected shape", this);
-    scaleOfDrawElFieldSB = new QSpinBox(this);
+    scaleOfDrawElFieldS = new QSlider(Qt::Orientation::Horizontal,this);
+    scaleOfDrawElFieldS->setMaximum(100);
+    scaleOfDrawElFieldS->setMinimum(5);
+    scaleOfDrawElFieldS->setValue(50);
+    drawElFieldCB = new QCheckBox("Show electric field in all area; scale: " + QString::number(scaleOfDrawElFieldS->value()), this);
     
-    scaleOfDrawElFieldSB->setMaximum(100);
-    scaleOfDrawElFieldSB->setMinimum(5);
-    scaleOfDrawElFieldSB->setValue(50);
-    drawElFieldCB = new QCheckBox("Show electric field in all area, scale; ", this);
 
-    chargeLE->setText(QString::number(1));
-    
-    //nNodes = &scribbleArea->nNodes;
-    //later - connect label to nNodes in area;
-    //connect(nNodes, &QObject::variableChanged, [=](int i) {
-    //    avaliableNodesL->setText("Number = " + QString::number(i));
-
-    testQSB = new QSpinBox(this);
+    drawPotMapS = new QSlider(Qt::Orientation::Horizontal, this);
+    drawPotMapS->setMaximum(10);
+    drawPotMapS->setMinimum(1);
+    drawPotMapS->setValue(2);
+    drawPotMapCB = new QCheckBox("Show potencial map in all area; scale: " + QString::number(drawPotMapS->value()), this);
 
     QWidget* testQW = new QWidget(this);
     QGridLayout* controlsLayout = new QGridLayout();
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
-
     QVBoxLayout* vbox1 = new QVBoxLayout();
 
-    controlsLayout->addWidget(crtScribbleBut, 0, 0);
+    controlsLayout->addWidget(crtScribbleBut, 0, 0,1,1);
     controlsLayout->addWidget(crtSingleBut, 1, 0);
     controlsLayout->addWidget(crtLineBut, 2, 0);
-
-    controlsLayout->addWidget(potMapBut,3,0);
+    controlsLayout->addWidget(dirBut, 3, 0);
+    
     controlsLayout->addWidget(showEqBut,4,0);
-    controlsLayout->addWidget(testQSB,5,0);
+    // 5 free
     controlsLayout->addWidget(clearBut,6,0);
     controlsLayout->addWidget(updateBut,7,0);
-    controlsLayout->addWidget(dirBut,8,0);
-    controlsLayout->addWidget(chargeLabel,9,0);
-    controlsLayout->addWidget(chargeLE,9,1,1,2);
-    controlsLayout->addWidget(reverseChargeBut,9,4);
+    controlsLayout->addWidget(chargeLabel, 8, 1);
+    controlsLayout->addWidget(chargeLE, 8, 2, 1, 2);
+    controlsLayout->addWidget(reverseChargeBut, 8, 0);
+    controlsLayout->addWidget(potMapBut, 9, 4);
+    controlsLayout->addWidget(drawPotMapCB, 9, 0);
+    controlsLayout->addWidget(drawPotMapS, 9, 1,1,2);
+
     controlsLayout->addWidget(drawElFieldCB,10,0);
-    controlsLayout->addWidget(scaleOfDrawElFieldSB,10,1);
-    controlsLayout->addWidget(deleteShapeBut,7,2);
-    controlsLayout->addWidget(sListWidget,0,2,7,3);
+    controlsLayout->addWidget(scaleOfDrawElFieldS,10,1,1,2);
+    controlsLayout->addWidget(deleteShapeBut,6,2);
+    controlsLayout->addWidget(sListWidget,0,1,6,3);
     
 
     vbox1->addWidget(scribbleArea);
@@ -85,13 +85,15 @@ MainWindow::MainWindow()
     connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); scribbleArea->setMouseTracking(true); });
     connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); scribbleArea->setMouseTracking(true); });
     connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); });
-    connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
+    //connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
     connect(showEqBut, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
     connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
     connect(deleteShapeBut, &QPushButton::clicked, this, &MainWindow::deleteShape );
     connect(drawElFieldCB, &QCheckBox::clicked, this, [=]() { scribbleArea->drawElField = drawElFieldCB->isChecked(); scribbleArea->updateShapes(); });
-    connect(scaleOfDrawElFieldSB, QOverload<int>::of(&QSpinBox::valueChanged), this, [=]() {scribbleArea->drawElFieldScale = scaleOfDrawElFieldSB->value(); scribbleArea->updateShapes(); });
+    connect(scaleOfDrawElFieldS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->drawElFieldScale = scaleOfDrawElFieldS->value(); scribbleArea->updateShapes(); drawElFieldCB->setText("Show electric field in all area; scale: " + QString::number(scaleOfDrawElFieldS->value())); });
+    connect(drawPotMapCB, &QCheckBox::clicked, this, [=]() { scribbleArea->drawPotMap = drawPotMapCB->isChecked(); scribbleArea->updateShapes(); });
+    connect(drawPotMapS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->potScale = drawPotMapS->value(); scribbleArea->updateShapes(); drawPotMapCB->setText("Show potencial map in all area; scale: " + QString::number(drawPotMapS->value())); });
     
     //setLayout(hbox);
     setCentralWidget(testQW);
@@ -274,4 +276,5 @@ void MainWindow::deleteShape()
         delete item;
         scribbleArea->updateShapes();
     }
+    scribbleArea->potShouldReCalc = true;
 }

@@ -39,36 +39,43 @@ public:
     QColor penColor() const { return myPenColor; }
     int penWidth() const { return myPenWidth; }
 
-    //bool lineMode;
+private:
     int nNodes;
     QVector2D tempPoint; // for line
-    enum ScribbleModes { NONE, LINE, SINGLE, CYLINDER, POTHEATMAP, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
+public:
+    
+    enum ScribbleModes { NONE, LINE, POINT, CYLINDER, POTHEATMAP, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
     QList<sShape*> shapes;
-    bool creatingShape;
     void updateShapes();
 
-    void setLineMode() { updateShapes();  nNodes = 2; scribblemodes = LINE; creatingShape = true; }
-    void setScribbleMode() { updateShapes(); scribblemodes = NONE; creatingShape = true;}
-    void setSingleMode() { updateShapes(); scribblemodes = SINGLE; creatingShape = true;}
-    void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; creatingShape = true;}
-    void setEqPotLinesMode() { scribblemodes = EQPOTLINES; creatingShape = true;}
+    void setLineMode() { updateShapes();  nNodes = 2; scribblemodes = LINE;  }
+    void setScribbleMode() { updateShapes(); scribblemodes = NONE; }
+    void setSingleMode() { updateShapes(); scribblemodes = POINT; }
+    void setCylinderMode() { updateShapes(); scribblemodes = CYLINDER; }
+    void setEqPotLinesMode() { scribblemodes = EQPOTLINES; }
     void setDirectionsMode() { scribblemodes = DIRECTIONS; }
 
 
-    std::vector<std::vector<float>> arrayOfPotencials;
+    
+
+public: // for potencial
+    bool drawPotMap = { false };
+    bool potShouldReCalc = { true };
+    int potScale = { 1 };
+    
+private:
     void calculatePotencial();
     QColor floatToRgb(float minValue, float maxValue, float value);
-
-    bool findEqvivalent = { false };
+    std::vector<std::vector<float>> arrayOfPotencials;
     float minPot;
     float avgPot;
     float maxPot;
     void calcEqPot(QPoint& point);
-    void drawPowerLine(QVector2D& startPos, const int maxPts = 10000, const QColor& lineColor = Qt::black, const bool reverse = false);
+    void drawPotencialAllArea();
 
-    void drawLines(QVector<QVector2D>& pointsToDraw, const QColor& lineColor = Qt::black);
-    bool drawPowerLinesAroundCharge(const QVector2D &chargePoint);
+public:
     float chargeToAdd = { 1 };
+private:
     QVector2D summaryFieldInPoint(const QVector2D start, bool reverse = false);
     QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
     bool powerLineCrossChargeOrBorder(const QVector2D lastPoint);
@@ -94,6 +101,9 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 public: // for test
+    void drawPowerLine(QVector2D& startPos, const int maxPts = 10000, const QColor& lineColor = Qt::black, const bool reverse = false);
+    void drawLines(QVector<QVector2D>& pointsToDraw, const QColor& lineColor = Qt::black);
+    bool drawPowerLinesAroundCharge(const QVector2D& chargePoint);
     void drawText(const QPoint& point, const QString& s, const QColor c = Qt::black);
     void drawCylTo(QPoint &point, qreal WIDTH);
     void drawRectangle(QPoint& point, QColor pointColor = Qt::green, qreal pointWidth = 15);
@@ -104,8 +114,8 @@ public:
     void drawElFieldAllArea();
     bool drawElField = { false };
     int drawElFieldScale = { 50 };
-public:
-    void drawPotencialAllArea();
+
+    
 private:
     QVector2D findIntersectLineNormal(QVector2D line_p1, QVector2D line_p2, QVector2D outer_p);
     void resizeImage(QImage* image, const QSize& newSize);
