@@ -58,25 +58,36 @@ private:
     QListWidget* sListWidget;
     //QList<sShape*> shapes;
 
-    QLabel* avaliableNodesL;
+
     QPushButton* crtLineBut;
     QPushButton* crtSingleBut;
     QPushButton* crtScribbleBut;
-    QPushButton* updateBut;
+
     QPushButton* dirBut;
     QPushButton* reverseChargeBut;
+
     QPushButton* deleteShapeBut;
+    QPushButton* deleteAllShapeBut;
+
     QLabel* chargeLabel;
     QLineEdit* chargeLE;
+
     QCheckBox* drawElFieldCB;
     QSlider* scaleOfDrawElFieldS;
+
     QCheckBox* drawPotMapCB;
     QSlider* drawPotMapS;
 
+    //QPushButton* showEqBut;
+    QCheckBox* showEqCB;
+    QSlider* precisionEqPtS;
+    QPushButton* clearStorageEqPtsBut;
+    //QLabel* precisionEqPtL;
 
-    QPushButton* potMapBut;
-    QPushButton* showEqBut;
-    QPushButton* clearBut;
+
+    //QPushButton* potMapBut;
+    
+    
 
     void testColorBut();
 

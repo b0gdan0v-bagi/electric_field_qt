@@ -44,6 +44,12 @@ void ScribbleArea::updateShapes()
     }
     if (potShouldReCalc && drawPotMap) calculatePotencial();
     if (!potShouldReCalc && drawPotMap) drawPotencialAllArea();
+    if (drawEqPotLines)
+    {
+        calcEqPot(tempPointEqPot);
+        for (auto &pts : storageEqPts) calcEqPot(pts);
+    }
+        
     if (drawElField) drawElFieldAllArea();
 }
 
@@ -55,10 +61,10 @@ void ScribbleArea::calculatePotencial()
     avgPot = 0;
     maxPot = 0;
     QMessageBox akaDebug;
-    for (int y = 0; y < height(); y++)
+    for (int y = 0; y < height(); y+=potScale)
     {
         std::vector<float> tempPot(width());
-        for (int x = 0; x < width(); x++)
+        for (int x = 0; x < width(); x+=potScale)
         {
             tempPot[x] = 0;
             for (auto const& sh : shapes) {
@@ -102,6 +108,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         // Make sure user we destroy line if user want to switch another thing while LINE havent finished
         if (scribblemodes != LINE) nNodes = 2; 
+        if (storePtsEqPotLines) storageEqPts.push_back(event->pos());
 
         switch (scribblemodes)
         {
@@ -154,8 +161,8 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
-    drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
-
+    //drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
+    tempPointEqPot = event->pos();
     
     switch (scribblemodes)
     {

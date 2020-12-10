@@ -62,6 +62,11 @@ public: // for potencial
     bool drawPotMap = { false };
     bool potShouldReCalc = { true };
     int potScale = { 1 };
+    float precisionFindEqPot = {0.01f};
+    bool drawEqPotLines = { false };
+    bool storePtsEqPotLines = { true }; // for test it is true
+    QPoint tempPointEqPot;
+    QList<QPoint> storageEqPts;
     
 private:
     void calculatePotencial();

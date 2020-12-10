@@ -93,23 +93,24 @@ void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoin
 
 void ScribbleArea::calcEqPot(QPoint& point)
 {
+    if (potShouldReCalc) calculatePotencial();
+    // calculatePotencial();
     QPainter painter(&image);
     painter.setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     float potToFind = arrayOfPotencials[point.y()][point.x()];
-    float precision = 1; // %
     for (int y = 0; y < height(); y++)
         for (int x = 0; x < width(); x++)
         {
             if (potToFind > 0) {
-                if (arrayOfPotencials[y][x] <= potToFind * (1 + precision / 100)
-                    && arrayOfPotencials[y][x] >= potToFind * (1 - precision / 100))
+                if (arrayOfPotencials[y][x] <= potToFind * (1 + precisionFindEqPot)
+                    && arrayOfPotencials[y][x] >= potToFind * (1 - precisionFindEqPot))
                 {
                     painter.drawPoint(x, y);
                 }
             }
             else {
-                if (arrayOfPotencials[y][x] >= potToFind * (1 + precision / 100)
-                    && arrayOfPotencials[y][x] <= potToFind * (1 - precision / 100))
+                if (arrayOfPotencials[y][x] >= potToFind * (1 + precisionFindEqPot)
+                    && arrayOfPotencials[y][x] <= potToFind * (1 - precisionFindEqPot))
                 {
                     painter.drawPoint(x, y);
                 }

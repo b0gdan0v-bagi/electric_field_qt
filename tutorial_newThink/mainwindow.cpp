@@ -18,10 +18,11 @@ MainWindow::MainWindow()
     // Create the ScribbleArea widget and make it
     // the central widget
     
-    clearBut = new QPushButton("Clear", this);
-    potMapBut = new QPushButton("show potencial map", this);
-    showEqBut = new QPushButton("show equipotential", this);
-    updateBut = new QPushButton("Update", this);
+    
+    //potMapBut = new QPushButton("show potencial map", this);
+    QToolBar* toolbar = addToolBar("main toolbar");
+
+
     crtLineBut = new QPushButton("Create line", this);
     crtScribbleBut = new QPushButton("Scribble", this);
     crtSingleBut = new QPushButton("Create 1 point", this);
@@ -32,7 +33,10 @@ MainWindow::MainWindow()
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
     chargeLE->setText(QString::number(1));
     reverseChargeBut = new QPushButton("Reverse charge", this);
+
     deleteShapeBut = new QPushButton("Delete selected shape", this);
+    deleteAllShapeBut = new QPushButton("Delete all shapes", this);
+
     scaleOfDrawElFieldS = new QSlider(Qt::Orientation::Horizontal,this);
     scaleOfDrawElFieldS->setMaximum(100);
     scaleOfDrawElFieldS->setMinimum(5);
@@ -46,6 +50,16 @@ MainWindow::MainWindow()
     drawPotMapS->setValue(2);
     drawPotMapCB = new QCheckBox("Show potencial map in all area; scale: " + QString::number(drawPotMapS->value()), this);
 
+    //showEqBut = new QPushButton("show equipotential", this);
+    
+    precisionEqPtS = new QSlider(Qt::Orientation::Horizontal, this);
+    precisionEqPtS->setMaximum(100);
+    precisionEqPtS->setMinimum(1);
+    precisionEqPtS->setValue(10);
+    showEqCB = new QCheckBox("show equipotential " + QString::number(precisionEqPtS->value() * 0.001) + " %,  precision", this);
+    clearStorageEqPtsBut = new QPushButton("clear points", this);
+    //precisionEqPtL = new QLabel(QString::number(precisionEqPtS->value()*0.001) + " %,  precision");
+
     QWidget* testQW = new QWidget(this);
     QGridLayout* controlsLayout = new QGridLayout();
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
@@ -56,20 +70,26 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(crtLineBut, 2, 0);
     controlsLayout->addWidget(dirBut, 3, 0);
     
-    controlsLayout->addWidget(showEqBut,4,0);
+    
     // 5 free
-    controlsLayout->addWidget(clearBut,6,0);
-    controlsLayout->addWidget(updateBut,7,0);
-    controlsLayout->addWidget(chargeLabel, 8, 1);
-    controlsLayout->addWidget(chargeLE, 8, 2, 1, 2);
-    controlsLayout->addWidget(reverseChargeBut, 8, 0);
-    controlsLayout->addWidget(potMapBut, 9, 4);
+    controlsLayout->addWidget(deleteAllShapeBut,6,3);
+    controlsLayout->addWidget(deleteShapeBut, 6, 2);
+
+    controlsLayout->addWidget(showEqCB, 8, 0);
+    controlsLayout->addWidget(precisionEqPtS ,8,1,1,2);
+    controlsLayout->addWidget(clearStorageEqPtsBut,8,4);
+    //controlsLayout->addWidget(precisionEqPtL, 8, 4);
+
+    controlsLayout->addWidget(chargeLabel, 7, 1);
+    controlsLayout->addWidget(chargeLE, 7, 2, 1, 2);
+    controlsLayout->addWidget(reverseChargeBut, 7, 0);
+
+    
     controlsLayout->addWidget(drawPotMapCB, 9, 0);
     controlsLayout->addWidget(drawPotMapS, 9, 1,1,2);
-
+    
     controlsLayout->addWidget(drawElFieldCB,10,0);
     controlsLayout->addWidget(scaleOfDrawElFieldS,10,1,1,2);
-    controlsLayout->addWidget(deleteShapeBut,6,2);
     controlsLayout->addWidget(sListWidget,0,1,6,3);
     
 
@@ -82,19 +102,28 @@ MainWindow::MainWindow()
     connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
     connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
     connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
-    connect(updateBut, &QPushButton::clicked, this, [=]() {scribbleArea->updateShapes(); updateListWidget(); scribbleArea->setMouseTracking(true); });
-    connect(clearBut, &QPushButton::clicked, this, [=]() { scribbleArea->clearImage(); scribbleArea->setMouseTracking(true); });
+    
+   
     connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); });
     //connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
-    connect(showEqBut, &QPushButton::clicked, this, [=]() { scribbleArea->setEqPotLinesMode(); scribbleArea->setMouseTracking(true); });
+    
     connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
+
     connect(deleteShapeBut, &QPushButton::clicked, this, &MainWindow::deleteShape );
+    connect(deleteAllShapeBut, &QPushButton::clicked, this, [=]() { scribbleArea->shapes.clear(); sListWidget->clear(); scribbleArea->updateShapes(); });
+    
     connect(drawElFieldCB, &QCheckBox::clicked, this, [=]() { scribbleArea->drawElField = drawElFieldCB->isChecked(); scribbleArea->updateShapes(); });
     connect(scaleOfDrawElFieldS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->drawElFieldScale = scaleOfDrawElFieldS->value(); scribbleArea->updateShapes(); drawElFieldCB->setText("Show electric field in all area; scale: " + QString::number(scaleOfDrawElFieldS->value())); });
+    
     connect(drawPotMapCB, &QCheckBox::clicked, this, [=]() { scribbleArea->drawPotMap = drawPotMapCB->isChecked(); scribbleArea->updateShapes(); });
     connect(drawPotMapS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->potScale = drawPotMapS->value(); scribbleArea->updateShapes(); drawPotMapCB->setText("Show potencial map in all area; scale: " + QString::number(drawPotMapS->value())); });
-    
+
+    connect(showEqCB, &QCheckBox::clicked, this, [=]() { scribbleArea->drawEqPotLines = showEqCB->isChecked(); scribbleArea->setMouseTracking(true); scribbleArea->updateShapes(); });
+    connect(precisionEqPtS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->precisionFindEqPot = precisionEqPtS->value()*0.001f;  showEqCB->setText("show equipotential " + QString::number(precisionEqPtS->value() * 0.001) + " %,  precision"); });
+    connect(clearStorageEqPtsBut, &QPushButton::clicked, this, [=]() {scribbleArea->storageEqPts.clear(); scribbleArea->updateShapes(); });
+
+
     //setLayout(hbox);
     setCentralWidget(testQW);
     //setCentralWidget(hbox);

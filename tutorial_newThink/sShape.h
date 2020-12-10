@@ -8,7 +8,6 @@
 
 class sShape;
 
-
 struct sNode
 {
 	sShape* parent;
@@ -158,3 +157,9 @@ struct sPoint : public sShape
 	}
 };
 
+struct StorageEqPts
+{
+	QPoint pos;
+	float precision;
+	StorageEqPts(QPoint pos_, float precision_) :pos(pos_), precision(precision_) {}
+};
