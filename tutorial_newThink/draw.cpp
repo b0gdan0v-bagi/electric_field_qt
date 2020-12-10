@@ -91,6 +91,29 @@ void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoin
         .adjusted(-rad, -rad, +rad, +rad));
 }
 
+void ScribbleArea::drawAllPowerLines()
+{
+    QVector2D mousePosVector(mousePoint);
+    if (drawPowerLinesAroundCharge(mousePosVector)) return;
+    float trueFieldValue = 0;
+    //updateShapes();
+    QVector2D fieldPoint = summaryFieldInPoint(mousePosVector);
+    fieldPoint -= mousePosVector;
+    fieldPoint *= 50 / fieldPoint.length();
+    fieldPoint += mousePosVector;
+    drawArrow(mousePosVector, fieldPoint);
+
+    QVector2D fieldPointReverse = summaryFieldInPoint(mousePosVector, true);
+    fieldPointReverse -= mousePosVector;
+    fieldPointReverse *= 50 / fieldPointReverse.length();
+    fieldPointReverse += mousePosVector;
+    drawLineBetween(summaryFieldInPoint(mousePosVector).toPoint(), mousePoint);
+
+    drawLineBetween(mousePosVector.toPoint(), fieldPointReverse.toPoint(), Qt::black);
+    drawPowerLine(mousePosVector, 10000, Qt::black, false);
+    drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line to -charges
+}
+
 void ScribbleArea::calcEqPot(QPoint& point)
 {
     if (potShouldReCalc) calculatePotencial();
@@ -195,7 +218,7 @@ bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
         {
             const float PI = 3.14159265358;
             const float roundedVectorXcoord = 15; //vector rounding around (0,0) with start coord (10,0)
-            updateShapes();
+            //updateShapes();
             for (float phi = 0; phi < 2 * PI; phi += PI / 6.f)
             {
                 QVector2D roundedVector(roundedVectorXcoord * cos(phi), roundedVectorXcoord * sin(phi));

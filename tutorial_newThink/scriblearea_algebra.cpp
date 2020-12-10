@@ -84,6 +84,49 @@ bool ScribbleArea::powerLineCrossChargeOrBorder(const QVector2D lastPoint)
     return false;
 }
 
+void ScribbleArea::calculatePotencial()
+{
+    arrayOfPotencials.clear();
+    float radius;
+    minPot = 0;
+    avgPot = 0;
+    maxPot = 0;
+    for (int y = 0; y < height(); y += potScale)
+    {
+        std::vector<float> tempPot(width());
+        for (int x = 0; x < width(); x += potScale)
+        {
+            tempPot[x] = 0;
+            for (auto const& sh : shapes) {
+                switch (sh->shapeType)
+                {
+                case sShape::ShapeType::POINT:
+                {
+                    radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
+                    if (radius > 3) tempPot[x] += (sh->charge / radius); break;
+                }
+                case sShape::ShapeType::LINE:
+                {
+                    for (auto const& pts : sh->allPoints)
+                    {
+                        radius = QVector2D(x, y).distanceToPoint(*pts);
+                        if (radius > 3) tempPot[x] += sh->charge / (radius * sh->allPoints.size());
+                    }
+                    break;
+                }
+                }
+
+            }
+            if (tempPot[x] > maxPot) maxPot = tempPot[x];
+            if (tempPot[x] < minPot) minPot = tempPot[x];
+            avgPot += tempPot[x];
+        }
+        arrayOfPotencials.push_back(tempPot);
+    }
+    avgPot /= (height() * width());
+    potShouldReCalc = false;
+}
+
 //drawRectangle(intersectPoint.toPoint());
 //drawLineBetween(QPoint(x,y),intersectPoint.toPoint());
 

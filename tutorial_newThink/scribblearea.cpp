@@ -46,58 +46,14 @@ void ScribbleArea::updateShapes()
     if (!potShouldReCalc && drawPotMap) drawPotencialAllArea();
     if (drawEqPotLines)
     {
-        calcEqPot(tempPointEqPot);
+        calcEqPot(mousePoint);
         for (auto &pts : storageEqPts) calcEqPot(pts);
     }
+
+    if (drawPowerLines) drawAllPowerLines();
         
     if (drawElField) drawElFieldAllArea();
 }
-
-void ScribbleArea::calculatePotencial()
-{
-    arrayOfPotencials.clear();
-    float radius;
-    minPot = 0;
-    avgPot = 0;
-    maxPot = 0;
-    QMessageBox akaDebug;
-    for (int y = 0; y < height(); y+=potScale)
-    {
-        std::vector<float> tempPot(width());
-        for (int x = 0; x < width(); x+=potScale)
-        {
-            tempPot[x] = 0;
-            for (auto const& sh : shapes) {
-                switch (sh->shapeType)
-                {
-                case sShape::ShapeType::POINT: 
-                {
-                     radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
-                     if (radius > 3) tempPot[x] += (sh->charge / radius); break; 
-                }
-                case sShape::ShapeType::LINE:
-                { 
-                    for (auto const& pts : sh->allPoints)
-                    {
-                        radius = QVector2D(x, y).distanceToPoint(*pts);
-                        if (radius > 3) tempPot[x] += sh->charge / (radius * sh->allPoints.size());
-                    }
-                    break;
-                }
-                }
-               
-            }
-            if (tempPot[x] > maxPot) maxPot = tempPot[x];
-            if (tempPot[x] < minPot) minPot = tempPot[x];
-            avgPot += tempPot[x];
-        }
-        arrayOfPotencials.push_back(tempPot);
-    }
-    avgPot /= ( height() * width());
-    potShouldReCalc = false;
-}
-
-
 
 
 // If a mouse button is pressed check if it was the
@@ -108,7 +64,9 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         // Make sure user we destroy line if user want to switch another thing while LINE havent finished
         if (scribblemodes != LINE) nNodes = 2; 
-        if (storePtsEqPotLines) storageEqPts.push_back(event->pos());
+        if (storePtsEqPotLines) 
+            //if (event->pos().x() < width() && event->pos().x() > 1 && event->pos().y() < height() && event->pos().y() > 1)
+                storageEqPts.push_back(event->pos());
 
         switch (scribblemodes)
         {
@@ -146,7 +104,6 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             break; }
         case ScribbleArea::CYLINDER:
             break;
-        case ScribbleArea::POTHEATMAP:  break;
         case ScribbleArea::EQPOTLINES: {calcEqPot(event->pos()); break; }
            
         case ScribbleArea::DIRECTIONS:
@@ -162,7 +119,8 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
     //drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
-    tempPointEqPot = event->pos();
+    mousePoint = event->pos();
+
     
     switch (scribblemodes)
     {
@@ -185,36 +143,11 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
     case ScribbleArea::POINT: {updateShapes(); drawRectangle(event->pos()); break; }
     case ScribbleArea::CYLINDER:
         break;
-    case ScribbleArea::POTHEATMAP:
-        break;
-    case ScribbleArea::EQPOTLINES:
-        break;
-    case ScribbleArea::DIRECTIONS:
-    {
-        
-        QVector2D mousePosVector(event->pos());
-        if (drawPowerLinesAroundCharge(mousePosVector)) return;
-        float trueFieldValue = 0;
-        updateShapes();
-        QVector2D fieldPoint = summaryFieldInPoint(mousePosVector);
-        fieldPoint -= mousePosVector;
-        fieldPoint *= 50 / fieldPoint.length();
-        fieldPoint += mousePosVector;
-        drawArrow(mousePosVector, fieldPoint);
-
-        QVector2D fieldPointReverse = summaryFieldInPoint(mousePosVector, true);
-        fieldPointReverse -= mousePosVector;
-        fieldPointReverse *= 50 / fieldPointReverse.length();
-        fieldPointReverse += mousePosVector;
-        drawLineBetween(summaryFieldInPoint(QVector2D(event->pos())).toPoint(), event->pos());
-
-        drawLineBetween(mousePosVector.toPoint(), fieldPointReverse.toPoint(), Qt::black);
-        drawPowerLine(mousePosVector, 10000, Qt::black, false);
-        drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line to -charges
- 
-        break;
+    case ScribbleArea::EQPOTLINES: { storePtsEqPotLines = true; break; }
+    case ScribbleArea::DIRECTIONS: break;
+    case ScribbleArea::TRACKING: break;
     }
-    }
+    storePtsEqPotLines = false;
 }
 
 // If the button is released we set variables to stop drawing

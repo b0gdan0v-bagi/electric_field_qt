@@ -59,11 +59,13 @@ private:
     //QList<sShape*> shapes;
 
 
-    QPushButton* crtLineBut;
-    QPushButton* crtSingleBut;
-    QPushButton* crtScribbleBut;
+    //QPushButton* crtLineBut;
+    //QPushButton* crtSingleBut;
+    //QPushButton* crtScribbleBut;
 
-    QPushButton* dirBut;
+    //QPushButton* dirBut;
+
+    QCheckBox* drawPowerLinesCB;
     QPushButton* reverseChargeBut;
 
     QPushButton* deleteShapeBut;

@@ -44,7 +44,7 @@ private:
     QVector2D tempPoint; // for line
 public:
     
-    enum ScribbleModes { NONE, LINE, POINT, CYLINDER, POTHEATMAP, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
+    enum ScribbleModes { NONE, LINE, POINT, CYLINDER, TRACKING, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
     QList<sShape*> shapes;
     void updateShapes();
 
@@ -55,8 +55,11 @@ public:
     void setEqPotLinesMode() { scribblemodes = EQPOTLINES; }
     void setDirectionsMode() { scribblemodes = DIRECTIONS; }
 
-
-    
+    QPoint mousePoint;
+public:
+    bool drawPowerLines = { false };
+private:
+    void drawAllPowerLines();
 
 public: // for potencial
     bool drawPotMap = { false };
@@ -65,7 +68,7 @@ public: // for potencial
     float precisionFindEqPot = {0.01f};
     bool drawEqPotLines = { false };
     bool storePtsEqPotLines = { true }; // for test it is true
-    QPoint tempPointEqPot;
+    
     QList<QPoint> storageEqPts;
     
 private:

@@ -21,12 +21,22 @@ MainWindow::MainWindow()
     
     //potMapBut = new QPushButton("show potencial map", this);
     QToolBar* toolbar = addToolBar("main toolbar");
+    toolbar->setMinimumHeight(50);
+    QAction* scribble = toolbar->addAction("Scribble", this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
+    toolbar->addSeparator();
+    QAction* createPoint = toolbar->addAction("Create Point",this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    QAction* createLine = toolbar->addAction("Create Line",this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    toolbar->addSeparator();
+    QAction* mouseMode = toolbar->addAction("Mouse mode", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::TRACKING; });
+    toolbar->addSeparator();
+    QAction* drawEqPotLine = toolbar->addAction("Store eqpotencial lines", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::EQPOTLINES;  scribbleArea->updateShapes(); });
+    toolbar->addSeparator();
+    QAction* reverseCharge = toolbar->addAction("Reverse charge",this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt() * -1)); });
 
-
-    crtLineBut = new QPushButton("Create line", this);
-    crtScribbleBut = new QPushButton("Scribble", this);
-    crtSingleBut = new QPushButton("Create 1 point", this);
-    dirBut = new QPushButton("Show directions", this);
+    //crtLineBut = new QPushButton("Create line", this);
+    //crtScribbleBut = new QPushButton("Scribble", this);
+    //crtSingleBut = new QPushButton("Create 1 point", this);
+    //dirBut = new QPushButton("Show directions", this);
     //avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
     chargeLabel = new QLabel("charge to add = k* ");
     chargeLE = new QLineEdit(this);
@@ -60,37 +70,43 @@ MainWindow::MainWindow()
     clearStorageEqPtsBut = new QPushButton("clear points", this);
     //precisionEqPtL = new QLabel(QString::number(precisionEqPtS->value()*0.001) + " %,  precision");
 
+    drawPowerLinesCB = new QCheckBox("show power lines", this);
+
     QWidget* testQW = new QWidget(this);
     QGridLayout* controlsLayout = new QGridLayout();
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
     QVBoxLayout* vbox1 = new QVBoxLayout();
 
-    controlsLayout->addWidget(crtScribbleBut, 0, 0,1,1);
-    controlsLayout->addWidget(crtSingleBut, 1, 0);
-    controlsLayout->addWidget(crtLineBut, 2, 0);
-    controlsLayout->addWidget(dirBut, 3, 0);
+    
+    //controlsLayout->addWidget(crtScribbleBut, 0, 0,1,1);
+    //controlsLayout->addWidget(crtSingleBut, 1, 0);
+    //controlsLayout->addWidget(crtLineBut, 2, 0);
+    //controlsLayout->addWidget(dirBut, 3, 0);
     
     
     // 5 free
-    controlsLayout->addWidget(deleteAllShapeBut,6,3);
-    controlsLayout->addWidget(deleteShapeBut, 6, 2);
+    
 
-    controlsLayout->addWidget(showEqCB, 8, 0);
-    controlsLayout->addWidget(precisionEqPtS ,8,1,1,2);
-    controlsLayout->addWidget(clearStorageEqPtsBut,8,4);
+    controlsLayout->addWidget(chargeLabel, 0, 1);
+    controlsLayout->addWidget(chargeLE, 0, 2, 1, 2);
+    controlsLayout->addWidget(reverseChargeBut, 0, 0);
+
+    controlsLayout->addWidget(showEqCB, 1, 0);
+    controlsLayout->addWidget(precisionEqPtS ,1,1,1,2);
+    controlsLayout->addWidget(clearStorageEqPtsBut,1,4);
     //controlsLayout->addWidget(precisionEqPtL, 8, 4);
 
-    controlsLayout->addWidget(chargeLabel, 7, 1);
-    controlsLayout->addWidget(chargeLE, 7, 2, 1, 2);
-    controlsLayout->addWidget(reverseChargeBut, 7, 0);
+    controlsLayout->addWidget(drawPotMapCB, 2, 0);
+    controlsLayout->addWidget(drawPotMapS, 2, 1,1,2);
+    
+    controlsLayout->addWidget(drawElFieldCB,3,0);
+    controlsLayout->addWidget(scaleOfDrawElFieldS,3,1,1,2);
 
+    controlsLayout->addWidget(drawPowerLinesCB, 4, 0, 1, 1);
     
-    controlsLayout->addWidget(drawPotMapCB, 9, 0);
-    controlsLayout->addWidget(drawPotMapS, 9, 1,1,2);
-    
-    controlsLayout->addWidget(drawElFieldCB,10,0);
-    controlsLayout->addWidget(scaleOfDrawElFieldS,10,1,1,2);
-    controlsLayout->addWidget(sListWidget,0,1,6,3);
+    controlsLayout->addWidget(sListWidget, 5, 0, 4, 3);
+    controlsLayout->addWidget(deleteAllShapeBut, 9, 1);
+    controlsLayout->addWidget(deleteShapeBut, 9, 0);
     
 
     vbox1->addWidget(scribbleArea);
@@ -99,15 +115,16 @@ MainWindow::MainWindow()
     hbox->addLayout(controlsLayout);
     //hbox->addLayout(vbox3);
     connect(chargeLE, &QLineEdit::textChanged,this, [=]() {scribbleArea->chargeToAdd = chargeLE->text().toInt(); });
-    connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
-    connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
-    connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    //connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
+    //connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    //connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
     
    
     connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); });
     //connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
     
-    connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
+    connect(drawPowerLinesCB, &QCheckBox::clicked, this, [=]() {scribbleArea->drawPowerLines = drawPowerLinesCB->isChecked(); });
+    //connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
 
     connect(deleteShapeBut, &QPushButton::clicked, this, &MainWindow::deleteShape );
