@@ -153,7 +153,14 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
     case ScribbleArea::TRACKING: {
         if (nodeHited)
         {
-            
+            for (auto& sh : shapes)
+                for (auto& node : sh->vecNodes)
+                    if (node.attachedToCursor) {
+                        node.pos = QVector2D(event->pos());
+                        //calculatePotencial();
+                        potShouldReCalc = true;
+                        updateShapes();
+                    }
         }
 
         setMouseTracking(true);
@@ -215,6 +222,11 @@ void ScribbleArea::mouseReleaseEvent(QMouseEvent* event)
             scribbling = false;
         }
     }
+    if (nodeHited)
+        for (auto& sh : shapes)
+            for (auto& node : sh->vecNodes)
+                node.attachedToCursor = false;
+    nodeHited = false;
 }
 
 // QPainter provides functions to draw on the widget
