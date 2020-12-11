@@ -127,6 +127,18 @@ void ScribbleArea::calculatePotencial()
     potShouldReCalc = false;
 }
 
+bool ScribbleArea::clickNearShapeNode(QVector2D& mouseClick)
+{
+    for (auto& sh : shapes)
+        for (auto& node : sh->vecNodes)
+            if (mouseClick.distanceToPoint(node.pos) < 10)
+            {
+                node.attachedToCursor = true;
+                return true;
+            }
+    return false;
+}
+
 //drawRectangle(intersectPoint.toPoint());
 //drawLineBetween(QPoint(x,y),intersectPoint.toPoint());
 

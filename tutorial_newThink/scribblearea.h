@@ -48,6 +48,9 @@ public:
     QList<sShape*> shapes;
     void updateShapes();
 
+    bool nodeHited = { false };
+    bool clickNearShapeNode(QVector2D& mouseClick);
+
     void setLineMode() { updateShapes();  nNodes = 2; scribblemodes = LINE;  }
     void setScribbleMode() { updateShapes(); scribblemodes = NONE; }
     void setSingleMode() { updateShapes(); scribblemodes = POINT; }

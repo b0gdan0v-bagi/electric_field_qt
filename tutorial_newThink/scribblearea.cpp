@@ -105,7 +105,11 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
         case ScribbleArea::CYLINDER:
             break;
         case ScribbleArea::EQPOTLINES: {storageEqPts.push_back(event->pos());/* calcEqPot(event->pos())*/; break; }
-           
+        case ScribbleArea::TRACKING: {
+            if (clickNearShapeNode(QVector2D(event->pos()))) nodeHited = true;
+
+            break;
+        }
         case ScribbleArea::DIRECTIONS:
             break;
         }
@@ -147,7 +151,53 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
     case ScribbleArea::EQPOTLINES: { storePtsEqPotLines = true; updateShapes(); break; }
     case ScribbleArea::DIRECTIONS: break;
     case ScribbleArea::TRACKING: {
-        drawInfo(event->pos());
+        if (nodeHited)
+        {
+            
+        }
+
+        setMouseTracking(true);
+        QString textToShow;
+        float const koef = 1000.f; //debug, field ampf on screen
+        float fieldValue = 0;
+        int shapeNumber = 1;
+        for (auto const& sh : shapes)
+        {
+            switch (sh->shapeType)
+            {
+            case sShape::ShapeType::POINT: {
+                if (QVector2D(event->pos()).distanceToPoint(sh->vecNodes[0].pos) < 10)
+                    textToShow += "Point number " + QString::number(shapeNumber) + " "
+                        + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
+                        + "\ncharge: " + QString::number(sh->charge) + "\n";
+                float radius = (sh->vecNodes[0].pos - QVector2D(event->pos())).length();
+                if (radius != 0) fieldValue += sh->charge / pow(radius / koef, 2);
+
+                break; }
+            case sShape::ShapeType::LINE:
+            {
+
+                bool lineIsNear = false;
+                for (auto const pts : sh->allPoints)
+                {
+                    if (QVector2D(event->pos()).distanceToPoint(*pts) < 10) lineIsNear = true;
+                    float radius = (*pts - QVector2D(event->pos())).length();
+                    if (radius != 0) fieldValue += sh->chargePerPoint / pow(radius / koef, 2);
+                }
+                if (lineIsNear)
+                    textToShow += "Line number " + QString::number(shapeNumber) + " "
+                    + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
+                    + "\npos: " + QString::number(sh->vecNodes[1].pos.x()) + ", " + QString::number(sh->vecNodes[1].pos.y())
+                    + "\ncharge: " + QString::number(sh->charge) + "\n";
+                break;
+            }
+            }
+            shapeNumber++;
+        }
+        if (potShouldReCalc) calculatePotencial();
+        textToShow += "potencial = " + QString::number(arrayOfPotencials[event->pos().y()][event->pos().x()]) + "\n";
+        textToShow += "Field value = " + QString::number(fieldValue) + "\n";
+        QToolTip::showText(event->globalPos(),textToShow, this, rect());
 
         break;
     }

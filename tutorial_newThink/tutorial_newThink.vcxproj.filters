@@ -62,9 +62,6 @@
     <QtMoc Include="mousecoordlabel.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="foo.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sShape.h">

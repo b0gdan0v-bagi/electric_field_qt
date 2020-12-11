@@ -5,7 +5,6 @@
 
 #include "mainwindow.h"
 
-#include "foo.h"
 
 
 // MainWindow constructor
@@ -40,7 +39,7 @@ MainWindow::MainWindow()
     //avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
     chargeLabel = new QLabel("charge to add = k* ");
     chargeLE = new QLineEdit(this);
-    chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000, this));
+    chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000.f, this));
     chargeLE->setText(QString::number(1));
     reverseChargeBut = new QPushButton("Reverse charge", this);
 

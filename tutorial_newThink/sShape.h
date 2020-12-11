@@ -11,8 +11,8 @@ class sShape;
 struct sNode
 {
 	sShape* parent;
-	//vf2D pos;
 	QVector2D pos;
+	bool attachedToCursor = { false };
 	sNode() {}
 	sNode(sShape* parent_, QVector2D pos_) : pos(pos_), parent(parent_) {}
 };
