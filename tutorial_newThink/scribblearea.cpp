@@ -64,9 +64,9 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
     if (event->button() == Qt::LeftButton) {
         // Make sure user we destroy line if user want to switch another thing while LINE havent finished
         if (scribblemodes != LINE) nNodes = 2; 
-        if (storePtsEqPotLines) 
+        //if (storePtsEqPotLines) 
             //if (event->pos().x() < width() && event->pos().x() > 1 && event->pos().y() < height() && event->pos().y() > 1)
-                storageEqPts.push_back(event->pos());
+                //storageEqPts.push_back(event->pos());
 
         switch (scribblemodes)
         {
@@ -104,7 +104,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             break; }
         case ScribbleArea::CYLINDER:
             break;
-        case ScribbleArea::EQPOTLINES: {calcEqPot(event->pos()); break; }
+        case ScribbleArea::EQPOTLINES: {storageEqPts.push_back(event->pos());/* calcEqPot(event->pos())*/; break; }
            
         case ScribbleArea::DIRECTIONS:
             break;
@@ -119,6 +119,7 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
     //drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
+    drawText(QPoint(50, 50), "N = " + QString::number(scribblemodes));
     mousePoint = event->pos();
 
     
@@ -143,9 +144,13 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
     case ScribbleArea::POINT: {updateShapes(); drawRectangle(event->pos()); break; }
     case ScribbleArea::CYLINDER:
         break;
-    case ScribbleArea::EQPOTLINES: { storePtsEqPotLines = true; break; }
+    case ScribbleArea::EQPOTLINES: { storePtsEqPotLines = true; updateShapes(); break; }
     case ScribbleArea::DIRECTIONS: break;
-    case ScribbleArea::TRACKING: break;
+    case ScribbleArea::TRACKING: {
+        drawInfo(event->pos());
+
+        break;
+    }
     }
     storePtsEqPotLines = false;
 }
@@ -190,14 +195,7 @@ void ScribbleArea::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
 }
 
-void ScribbleArea::drawText(const QPoint& point, const QString& s, QColor c)
-{
-    QPainter painter(&image);
-    painter.setPen(QPen(c, myPenWidth, Qt::SolidLine, Qt::RoundCap,
-        Qt::RoundJoin));
-    painter.drawText(point, s);
-    update();
-}
+
 
 void ScribbleArea::drawCylTo(QPoint &point, qreal WIDTH = 10)
 {

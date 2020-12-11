@@ -153,7 +153,6 @@ void ScribbleArea::drawPowerLine(QVector2D& startPos, const int maxPts, const QC
         pointsOfPowerLine.push_back(tempPoint);
         ptsCount++;
         if (ptsCount >= maxPts) break;
-
     }
     drawLines(pointsOfPowerLine, lineColor);
     if (pointsOfPowerLine.size() > 15)
@@ -180,11 +179,7 @@ void ScribbleArea::drawElFieldAllArea()
 {
     for (int y = 10; y < height(); y+= drawElFieldScale)
         for (int x = 10; x < width(); x+= drawElFieldScale)
-        {
             drawPowerLine(QVector2D(x, y), drawElFieldScale/2);
-            //drawPowerLine(QVector2D(x, y), 15,Qt::black,true);
-        }
-
 }
 
 void ScribbleArea::drawPotencialAllArea()
@@ -201,11 +196,6 @@ void ScribbleArea::drawPotencialAllArea()
                 colorHeatMap,
                 potScale, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
             painter.drawRect(x, y, potScale, potScale);
-           // painter.drawRect()
-            /*painter.drawPoints()
-            for (int i = 0; i<potScale;i++)
-                for (int j=0; j<potScale;j++)
-                    painter.drawPoint(x+i, y+j);*/
         }
     }
     update();
@@ -217,8 +207,7 @@ bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
         if (sh->shapeType == sShape::ShapeType::POINT && sh->vecNodes[0].pos.distanceToPoint(chargePoint) < 10)
         {
             const float PI = 3.14159265358;
-            const float roundedVectorXcoord = 15; //vector rounding around (0,0) with start coord (10,0)
-            //updateShapes();
+            const float roundedVectorXcoord = 15; //vector rounding around (0,0) with start coord (15,0)
             for (float phi = 0; phi < 2 * PI; phi += PI / 6.f)
             {
                 QVector2D roundedVector(roundedVectorXcoord * cos(phi), roundedVectorXcoord * sin(phi));
@@ -233,9 +222,28 @@ bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
 }
 
 QColor ScribbleArea::floatToRgb(float minValue, float maxValue, float value) {
+    if (maxValue == minValue) return QColor(Qt::white);
     float ratio = ratio = 2 * (value - minValue) / (maxValue - minValue);
     int red = (int)(std::max(0.f, 255 * (ratio - 1)));
     int blue = (int)(std::max(0.f, 255 * (1 - ratio)));
     int green = 255 - blue - red;
     return QColor(red, green, blue, 255);
+}
+
+void ScribbleArea::drawText(const QPoint& point, const QString& s, QColor c)
+{
+    QPainter painter(&image);
+    painter.setPen(QPen(c, myPenWidth, Qt::SolidLine, Qt::RoundCap,
+        Qt::RoundJoin));
+    painter.drawText(point, s);
+    update();
+}
+
+void ScribbleArea::drawInfo(const QPoint& point)
+{
+    QPainter painter(&image);
+    painter.setPen(Qt::white);
+    painter.setBrush(Qt::BrushStyle::SolidPattern);
+    painter.drawRect(point.x(), point.y(), 50, 50);
+    update();
 }

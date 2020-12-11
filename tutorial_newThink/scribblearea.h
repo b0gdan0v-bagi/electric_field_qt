@@ -118,6 +118,7 @@ public: // for test
     void drawLineTo(const QPoint& endPoint);
     void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint, const QColor lineColor = Qt::black);
     void drawArrow(const QVector2D& fromPoint, const QVector2D& toPoint, const float head_length = 10.f, const float head_width = 5.f, const QColor lineColor = Qt::black, const bool drawBody = true);
+    void drawInfo(const QPoint& point);
 public:
     void drawElFieldAllArea();
     bool drawElField = { false };
