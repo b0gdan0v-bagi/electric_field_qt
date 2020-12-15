@@ -67,7 +67,7 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool rever
 QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
 {
     QVector2D res;
-    float trueFieldValue = 0;
+    float trueForceValue = 0;
     float const koef = 1000.f; //debug, field ampf on screen
     for (auto const& sh : shapes)
         switch (sh->shapeType)
@@ -78,7 +78,7 @@ QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
             if (radius != 0)
             {
                 res += plusFieldInPointByPoint(curS.movingPos, sh->vecNodes[0].pos, sh->charge);
-                trueFieldValue += sh->charge / pow(radius / koef, 2);
+                trueForceValue += curS.charge * sh->charge / pow(radius / koef, 2);
             }
             break; }
         case sShape::ShapeType::LINE:
@@ -87,7 +87,7 @@ QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
             {
                 float radius = (*pts - curS.movingPos).length();
                 if (radius != 0) {
-                    trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
+                    trueForceValue += curS.charge * sh->chargePerPoint / pow(radius / koef, 2);
                     res += plusFieldInPointByPoint(curS.movingPos, *pts, sh->chargePerPoint);
                 }
             }
@@ -100,16 +100,16 @@ QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
                 float radius = (sh->movingPos - curS.movingPos).length();
                 if (radius != 0)
                 {
-                    res += plusFieldInPointByPoint(curS.movingPos, sh->vecNodes[0].pos, sh->charge);
-                    trueFieldValue += sh->charge / pow(radius / koef, 2);
+                    res += plusFieldInPointByPoint(curS.movingPos, sh->movingPos, sh->charge);
+                    trueForceValue += curS.charge * sh->charge / pow(radius / koef, 2);
                 }
             }
             break; }
         }
-    trueFieldValue /= 2.f;
+    trueForceValue /= 2.f;
     if (res.length() == 0) return curS.movingPos;
-    if (reverse) res *= -trueFieldValue / res.length();
-    else res *= trueFieldValue / res.length();
+    if (reverse) res *= -trueForceValue / res.length();
+    else res *= trueForceValue / res.length();
 
 
     res += curS.movingPos;
@@ -282,16 +282,15 @@ void ScribbleArea::startSimulateMovement()
             QVector2D tempPos = sh->movingPos;
 
             //sh->forceVec = summaryForceInPoint(*sh,chargeSign);
-            sh->forceVec = summaryForceInPoint(*sh,chargeSign);
+            sh->forceVec = summaryForceInPoint(*sh);
             sh->speedVec -= tempPos;
             sh->forceVec -= tempPos;
-            sh->forceVec *= sh->charge;
+            //sh->forceVec *= sh->charge;
 
             sh->forceVec /= 3;
 
             sh->speedVec = sh->speedVec + sh->forceVec;
 
-            
 
             sh->speedVec += tempPos;
             sh->forceVec += tempPos;
