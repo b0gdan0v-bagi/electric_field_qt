@@ -1,6 +1,7 @@
 #include "scribblearea.h"
 
 
+
 ScribbleArea::ScribbleArea(QWidget* parent)
     : QWidget(parent), QObject(parent)
 {
@@ -14,9 +15,30 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     myPenColor = Qt::blue;
     scribblemodes = NONE; // test
     nNodes = 2;
-    setMouseTracking(true);
+    //setMouseTracking(true);
     updateShapes();
-       
+
+    //arrayOfPotencials.resize()
+    temp_vector = QVector<float>(1920,0);
+    arrayOfPotencials = QVector<QVector<float>>(1080, temp_vector);
+
+    QTimer* TESTtimer = new QTimer(this);
+    TESTtimer = new QTimer(this);
+    //QObject::connect(TESTtimer, &QTimer::timeout, this, [=]() {TESTtimer->start(1000); });
+    //TESTtimer->start(1000);
+    TEST_timerId = QObject::startTimer(50);
+
+}
+
+void ScribbleArea::timerEvent(QTimerEvent* event)
+{
+    //simulateMovement();
+    //clearImage();
+    //drawText(QPoint(50, 50), "test " + QString::number(mousePoint.x()));
+    if (scribblemodes == SIMULATE) startSimulateMovement();
+    else stopSimulateMovement();
+
+    //drawText(QPoint(50, 100), "test " + QString::number());
 }
 
 
@@ -40,6 +62,14 @@ void ScribbleArea::updateShapes()
             // "if" for checking only
             if (sh->vecNodes.size() > 1) drawLineBetween(sh->vecNodes.at(0).pos.toPoint(), sh->vecNodes.at(1).pos.toPoint(), Qt::black);
             break; }
+        case sShape::ShapeType::MOVING_POINT: {
+            drawRectangle(sh->vecNodes[0].pos.toPoint(), Qt::darkCyan); //draw start position
+            if (sh->interactable) {
+                drawRectangle(sh->movingPos.toPoint(), sh->getColor()); // draw charge in it place
+                drawArrow(sh->movingPos, sh->forceVec); // vec of force
+                drawArrow(sh->movingPos, sh->speedVec, 10, 5, Qt::darkMagenta); // vec of force
+            }
+            drawArrow(sh->vecNodes[0].pos, sh->vecNodes[1].pos); break; }
         }
     }
     if (potShouldReCalc && drawPotMap) calculatePotencial();
@@ -53,6 +83,10 @@ void ScribbleArea::updateShapes()
     if (drawPowerLines) drawAllPowerLines();
         
     if (drawElField) drawElFieldAllArea();
+
+    //drawText(QPoint(50, 50), "N = " + QString::number(mouseInboundArea()));
+    //drawText(QPoint(50, 100), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
+    //drawText(QPoint(50, 150), "x = " + QString::number(mouseVector.x()) + "\ny = " + QString::number(mouseVector.y()));
 }
 
 
@@ -61,12 +95,13 @@ void ScribbleArea::updateShapes()
 // Set that we are currently drawing
 void ScribbleArea::mousePressEvent(QMouseEvent* event)
 {
+    //if (scribblemodes == SIMULATE) TESTtimer->start(50);
+    //if (scribblemodes == SIMULATE) TESTtimer->start(1000);
+
     if (event->button() == Qt::LeftButton) {
         // Make sure user we destroy line if user want to switch another thing while LINE havent finished
-        if (scribblemodes != LINE) nNodes = 2; 
-        //if (storePtsEqPotLines) 
-            //if (event->pos().x() < width() && event->pos().x() > 1 && event->pos().y() < height() && event->pos().y() > 1)
-                //storageEqPts.push_back(event->pos());
+        if (scribblemodes != LINE && scribblemodes != MOVING_POINT) nNodes = 2;
+
 
         switch (scribblemodes)
         {
@@ -81,18 +116,12 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
                 tempPoint = QVector2D(event->pos());// 
                 drawRectangle(tempPoint.toPoint());
                 nNodes--;
-                scribbling = true;
-                setMouseTracking(true);
             }
             else if (nNodes == 1)
             {
                 nNodes++;
                 shapes.push_back(new sLine(tempPoint, QVector2D(event->pos()), chargeToAdd));
                 potShouldReCalc = true;
-               // for (auto const& pts : shapes.back()->allPoints)
-               //     drawRectangle(pts->toPoint());
-                scribbling = false;
-                //setMouseTracking(false);
                 updateShapes();
             }
             break; 
@@ -102,6 +131,25 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
             potShouldReCalc = true;
             updateShapes();
             break; }
+        case ScribbleArea::MOVING_POINT:
+        {
+            if (nNodes == 2)
+            {
+                tempPoint = QVector2D(event->pos());// 
+                drawRectangle(tempPoint.toPoint());
+                nNodes--;
+                //setMouseTracking(true);
+            }
+            else if (nNodes == 1)
+            {
+                nNodes++;
+                shapes.push_back(new sMovingPoint(tempPoint, QVector2D(event->pos()), chargeToAdd));
+                potShouldReCalc = true;
+                updateShapes();
+            }
+            break;
+        }
+
         case ScribbleArea::CYLINDER:
             break;
         case ScribbleArea::EQPOTLINES: {storageEqPts.push_back(event->pos());/* calcEqPot(event->pos())*/; break; }
@@ -122,11 +170,15 @@ void ScribbleArea::mousePressEvent(QMouseEvent* event)
 // from the last position to the current
 void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
 {
-    //drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
-    drawText(QPoint(50, 50), "N = " + QString::number(scribblemodes));
-    mousePoint = event->pos();
-
     
+    //drawText(QPoint(50, 50), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
+    //drawText(QPoint(50, 50), "N = " + QString::number(scribblemodes));
+    //mousePoint = event->pos();
+    mouseVector = inboundVector( QVector2D(event->pos()));
+    mousePoint = mouseVector.toPoint();
+
+    if (!vectorInbound(QVector2D(event->pos()))) updateShapes();
+
     switch (scribblemodes)
     {
     case ScribbleArea::NONE: {
@@ -137,75 +189,50 @@ void ScribbleArea::mouseMoveEvent(QMouseEvent* event)
         {
             updateShapes();
             drawRectangle(tempPoint.toPoint());
-            drawLineBetween(tempPoint.toPoint(), event->pos(), Qt::blue);
-            drawRectangle(event->pos());
+            drawLineBetween(tempPoint.toPoint(), mousePoint, Qt::blue);
+            drawRectangle(mousePoint);
         }
         else {
             updateShapes(); 
-            drawRectangle(event->pos());
+            drawRectangle(mousePoint);
         }
         break; }
-    case ScribbleArea::POINT: {updateShapes(); drawRectangle(event->pos()); break; }
+    case ScribbleArea::POINT: {updateShapes(); drawRectangle(mousePoint); break; }
+    case ScribbleArea::MOVING_POINT: {
+        if (nNodes == 1)
+        {
+            updateShapes();
+            drawRectangle(tempPoint.toPoint());
+            drawArrow(tempPoint, mouseVector);
+        }
+        else {
+            updateShapes();
+            drawRectangle(mousePoint);
+        }
+        break; }
     case ScribbleArea::CYLINDER:
         break;
     case ScribbleArea::EQPOTLINES: { storePtsEqPotLines = true; updateShapes(); break; }
     case ScribbleArea::DIRECTIONS: break;
+    case ScribbleArea::SIMULATE: { 
+        if (mouseInboundArea()) drawToolTip(event);
+        break; }
     case ScribbleArea::TRACKING: {
         if (nodeHited)
         {
             for (auto& sh : shapes)
                 for (auto& node : sh->vecNodes)
                     if (node.attachedToCursor) {
-                        node.pos = QVector2D(event->pos());
-                        //calculatePotencial();
+                         
+                        node.pos =  mouseVector;
+                        
                         potShouldReCalc = true;
                         updateShapes();
                     }
         }
 
-        setMouseTracking(true);
-        QString textToShow;
-        float const koef = 1000.f; //debug, field ampf on screen
-        float fieldValue = 0;
-        int shapeNumber = 1;
-        for (auto const& sh : shapes)
-        {
-            switch (sh->shapeType)
-            {
-            case sShape::ShapeType::POINT: {
-                if (QVector2D(event->pos()).distanceToPoint(sh->vecNodes[0].pos) < 10)
-                    textToShow += "Point number " + QString::number(shapeNumber) + " "
-                        + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
-                        + "\ncharge: " + QString::number(sh->charge) + "\n";
-                float radius = (sh->vecNodes[0].pos - QVector2D(event->pos())).length();
-                if (radius != 0) fieldValue += sh->charge / pow(radius / koef, 2);
-
-                break; }
-            case sShape::ShapeType::LINE:
-            {
-
-                bool lineIsNear = false;
-                for (auto const pts : sh->allPoints)
-                {
-                    if (QVector2D(event->pos()).distanceToPoint(*pts) < 10) lineIsNear = true;
-                    float radius = (*pts - QVector2D(event->pos())).length();
-                    if (radius != 0) fieldValue += sh->chargePerPoint / pow(radius / koef, 2);
-                }
-                if (lineIsNear)
-                    textToShow += "Line number " + QString::number(shapeNumber) + " "
-                    + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
-                    + "\npos: " + QString::number(sh->vecNodes[1].pos.x()) + ", " + QString::number(sh->vecNodes[1].pos.y())
-                    + "\ncharge: " + QString::number(sh->charge) + "\n";
-                break;
-            }
-            }
-            shapeNumber++;
-        }
-        if (potShouldReCalc) calculatePotencial();
-        textToShow += "potencial = " + QString::number(arrayOfPotencials[event->pos().y()][event->pos().x()]) + "\n";
-        textToShow += "Field value = " + QString::number(fieldValue) + "\n";
-        QToolTip::showText(event->globalPos(),textToShow, this, rect());
-
+        //setMouseTracking(true);
+        if (event->pos() == mousePoint) drawToolTip(event);
         break;
     }
     }
@@ -283,6 +310,9 @@ void ScribbleArea::resizeImage(QImage* image, const QSize& newSize)
     if (image->size() == newSize)
         return;
 
+    //temp_vector = QVector<float>(width(), 0);
+    //arrayOfPotencials = QVector<QVector<float>>(height(), temp_vector);
+
     // Create a new image to display and fill it with white
     QImage newImage(newSize, QImage::Format_RGB32);
     newImage.fill(qRgb(255, 255, 255));
@@ -292,4 +322,5 @@ void ScribbleArea::resizeImage(QImage* image, const QSize& newSize)
     painter.drawImage(QPoint(0, 0), *image);
     *image = newImage;
 }
+
 

@@ -114,6 +114,8 @@ void ScribbleArea::drawAllPowerLines()
     drawPowerLine(mousePosVector, 10000, Qt::black, true); // reverse line to -charges
 }
 
+
+
 void ScribbleArea::calcEqPot(QPoint& point)
 {
     if (potShouldReCalc) calculatePotencial();
@@ -148,9 +150,9 @@ void ScribbleArea::drawPowerLine(QVector2D& startPos, const int maxPts, const QC
     pointsOfPowerLine.push_back(summaryFieldInPoint(startPos, reverse));
     int ptsCount = 0;
     while (true) {
-        QVector2D tempPoint = summaryFieldInPoint(pointsOfPowerLine.back(), reverse);
-        if (powerLineCrossChargeOrBorder(tempPoint)) break;
-        pointsOfPowerLine.push_back(tempPoint);
+        QVector2D tempVec = summaryFieldInPoint(pointsOfPowerLine.back(), reverse);
+        if (vecCrossChargeOrBorder(tempVec)) break;
+        pointsOfPowerLine.push_back(tempVec);
         ptsCount++;
         if (ptsCount >= maxPts) break;
     }
@@ -173,6 +175,8 @@ void ScribbleArea::drawLines(QVector<QVector2D>& pointsToDraw, const QColor &lin
     painter.drawLines(linesToDraw);
     update();
 }
+
+
 
 
 void ScribbleArea::drawElFieldAllArea()
@@ -204,7 +208,8 @@ void ScribbleArea::drawPotencialAllArea()
 bool ScribbleArea::drawPowerLinesAroundCharge(const QVector2D& chargePoint)
 {
     for (auto const& sh : shapes)
-        if (sh->shapeType == sShape::ShapeType::POINT && sh->vecNodes[0].pos.distanceToPoint(chargePoint) < 10)
+        if ((sh->shapeType == sShape::ShapeType::POINT || sh->shapeType == sShape::ShapeType::MOVING_POINT)
+            && sh->vecNodes[0].pos.distanceToPoint(chargePoint) < 10)
         {
             const float PI = 3.14159265358;
             const float roundedVectorXcoord = 15; //vector rounding around (0,0) with start coord (15,0)
@@ -246,4 +251,58 @@ void ScribbleArea::drawInfo(const QPoint& point)
     painter.setBrush(Qt::BrushStyle::SolidPattern);
     painter.drawRect(point.x(), point.y(), 50, 50);
     update();
+}
+
+void ScribbleArea::drawToolTip(QMouseEvent* event)
+{
+    QString textToShow;
+    float const koef = 1000.f; //debug, field ampf on screen
+    float fieldValue = 0;
+    int shapeNumber = 1;
+    for (auto const& sh : shapes)
+    {
+        switch (sh->shapeType)
+        {
+        case sShape::ShapeType::POINT: {
+            if (mouseVector.distanceToPoint(sh->vecNodes[0].pos) < 10)
+                textToShow += "Point number " + QString::number(shapeNumber) + " "
+                + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
+                + "\ncharge: " + QString::number(sh->charge) + "\n";
+            float radius = (sh->vecNodes[0].pos - mouseVector).length();
+            if (radius != 0) fieldValue += sh->charge / pow(radius / koef, 2);
+
+            break; }
+        case sShape::ShapeType::LINE:
+        {
+            bool lineIsNear = false;
+            for (auto const pts : sh->allPoints)
+            {
+                if (mouseVector.distanceToPoint(*pts) < 10) lineIsNear = true;
+                float radius = (*pts - mouseVector).length();
+                if (radius != 0) fieldValue += sh->chargePerPoint / pow(radius / koef, 2);
+            }
+            if (lineIsNear)
+                textToShow += "Line number " + QString::number(shapeNumber) + " "
+                + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
+                + "\npos: " + QString::number(sh->vecNodes[1].pos.x()) + ", " + QString::number(sh->vecNodes[1].pos.y())
+                + "\ncharge: " + QString::number(sh->charge) + "\n";
+            break;
+        }
+        case sShape::ShapeType::MOVING_POINT:
+        {
+            if (mouseVector.distanceToPoint(sh->vecNodes[0].pos) < 10)
+                textToShow += "Point number " + QString::number(shapeNumber) + " "
+                + "\npos: " + QString::number(sh->vecNodes[0].pos.x()) + ", " + QString::number(sh->vecNodes[0].pos.y())
+                + "\ncharge: " + QString::number(sh->charge) + "\n";
+            float radius = (sh->movingPos - mouseVector).length();
+            if (radius != 0) fieldValue += sh->charge / pow(radius / koef, 2);
+
+            break; }
+        }
+        shapeNumber++;
+    }
+    if (potShouldReCalc) calculatePotencial();
+    textToShow += "potencial = " + QString::number(arrayOfPotencials[event->pos().y()][event->pos().x()]) + "\n";
+    textToShow += "Field value = " + QString::number(fieldValue) + "\n";
+    QToolTip::showText(event->globalPos(), textToShow, this, rect());
 }

@@ -23,20 +23,20 @@ MainWindow::MainWindow()
     toolbar->setMinimumHeight(50);
     QAction* scribble = toolbar->addAction("Scribble", this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
     toolbar->addSeparator();
-    QAction* createPoint = toolbar->addAction("Create Point",this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
-    QAction* createLine = toolbar->addAction("Create Line",this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    QAction* createPoint = toolbar->addAction("Create Point",this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::POINT; updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    QAction* createLine = toolbar->addAction("Create Line",this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::LINE; updateListWidget(); scribbleArea->setMouseTracking(true);  });
+    QAction* createMovingPoint = toolbar->addAction("Create moving Point",this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::MOVING_POINT; updateListWidget(); scribbleArea->setMouseTracking(true);  });
     toolbar->addSeparator();
     QAction* mouseMode = toolbar->addAction("Mouse mode", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::TRACKING; });
     toolbar->addSeparator();
     QAction* drawEqPotLine = toolbar->addAction("Store eqpotencial lines", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::EQPOTLINES;  scribbleArea->updateShapes(); });
     toolbar->addSeparator();
     QAction* reverseCharge = toolbar->addAction("Reverse charge",this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt() * -1)); });
+    toolbar->addSeparator();
+    QAction* startSimulate = toolbar->addAction("Start simulating", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::SIMULATE;/*scribbleArea->simulateMovement(); */});
+    QAction* stopSimulate = toolbar->addAction("Stop simulating", this, [=]() {scribbleArea->scribblemodes = ScribbleArea::ScribbleModes::TRACKING; scribbleArea->updateShapes(); });
 
-    //crtLineBut = new QPushButton("Create line", this);
-    //crtScribbleBut = new QPushButton("Scribble", this);
-    //crtSingleBut = new QPushButton("Create 1 point", this);
-    //dirBut = new QPushButton("Show directions", this);
-    //avaliableNodesL = new QLabel(QString::number(scribbleArea->nNodes), this);
+
     chargeLabel = new QLabel("charge to add = k* ");
     chargeLE = new QLineEdit(this);
     chargeLE->setValidator(new QIntValidator(-1000000.f, 1000000.f, this));
@@ -303,9 +303,17 @@ void MainWindow::updateListWidget()
         QString toAddName;
         switch (sh->shapeType)
         {
-        case 0: {toAddName = "point " + QString::number(count) + " charge " + QString::number(sh->charge); break; }
-        case 1: {toAddName = "line " + QString::number(count) + " charge " + QString::number(sh->charge); break; }
+        case sShape::ShapeType::POINT: {
+            toAddName = "point " + QString::number(count) + " charge " + QString::number(sh->charge); 
+            break; }
+        case sShape::ShapeType::LINE: {
+            toAddName = "line " + QString::number(count) + " charge " + QString::number(sh->charge); 
+            break; }
+        case sShape::ShapeType::MOVING_POINT: {
+            toAddName = "moving point " + QString::number(count) + " charge " + QString::number(sh->charge);
+            break; }
         } 
+        //toAddName += QString::number(sh->shapeType);
         sListWidget->addItem(toAddName);
         count++;
     }

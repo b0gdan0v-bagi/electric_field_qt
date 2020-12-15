@@ -27,6 +27,9 @@ class ScribbleArea : public QWidget, public QObject
 public:
     ScribbleArea(QWidget* parent = 0) ;
 
+    QTimer* TESTtimer;
+    int TEST_timerId;
+
     // Handles all events
     bool openImage(const QString& fileName);
     bool saveImage(const QString& fileName, const char* fileFormat);
@@ -44,12 +47,15 @@ private:
     QVector2D tempPoint; // for line
 public:
     
-    enum ScribbleModes { NONE, LINE, POINT, CYLINDER, TRACKING, EQPOTLINES, DIRECTIONS } scribblemodes = NONE;
+    enum ScribbleModes { NONE, LINE, POINT,MOVING_POINT, CYLINDER, TRACKING, EQPOTLINES, DIRECTIONS,SIMULATE } scribblemodes = NONE;
     QList<sShape*> shapes;
     void updateShapes();
 
     bool nodeHited = { false };
     bool clickNearShapeNode(QVector2D& mouseClick);
+    bool mouseInboundArea();
+    QVector2D inboundVector(QVector2D vectorToCheck, int boundSize = 5);
+    //bool chargeIntersectChargeOrBound(QVector2D vectorToCheck);
 
     void setLineMode() { updateShapes();  nNodes = 2; scribblemodes = LINE;  }
     void setScribbleMode() { updateShapes(); scribblemodes = NONE; }
@@ -58,7 +64,16 @@ public:
     void setEqPotLinesMode() { scribblemodes = EQPOTLINES; }
     void setDirectionsMode() { scribblemodes = DIRECTIONS; }
 
+    void startSimulateMovement();
+    void stopSimulateMovement();
+    bool mChargeCrossChargeOrBorder(const sShape& s, const int boundSize = 5);
+    QVector2D summaryForceInPoint(const sShape& curS, bool reverse = false);
+private:
+
+    bool vectorInbound(QVector2D v, int boundSize = 5);
+
     QPoint mousePoint;
+    QVector2D mouseVector;
 public:
     bool drawPowerLines = { false };
 private:
@@ -77,7 +92,9 @@ public: // for potencial
 private:
     void calculatePotencial();
     QColor floatToRgb(float minValue, float maxValue, float value);
-    std::vector<std::vector<float>> arrayOfPotencials;
+    //QVector<QVector<float>> arrayOfPotencials;
+    QVector<float> temp_vector;
+    QVector<QVector<float>> arrayOfPotencials;
     float minPot;
     float avgPot;
     float maxPot;
@@ -89,7 +106,7 @@ public:
 private:
     QVector2D summaryFieldInPoint(const QVector2D start, bool reverse = false);
     QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
-    bool powerLineCrossChargeOrBorder(const QVector2D lastPoint);
+    bool vecCrossChargeOrBorder(const QVector2D v, const int boundSize = 5);
 
 signals:
     void dataReady(const QList<sShape*>& shapes_);
@@ -103,6 +120,7 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+    void timerEvent(QTimerEvent* event) override;
 
     // Updates the scribble area where we are painting
     void paintEvent(QPaintEvent* event) override;
@@ -122,6 +140,7 @@ public: // for test
     void drawLineBetween(const QPoint& startPoint, const QPoint& endPoint, const QColor lineColor = Qt::black);
     void drawArrow(const QVector2D& fromPoint, const QVector2D& toPoint, const float head_length = 10.f, const float head_width = 5.f, const QColor lineColor = Qt::black, const bool drawBody = true);
     void drawInfo(const QPoint& point);
+    void drawToolTip(QMouseEvent* event);
 public:
     void drawElFieldAllArea();
     bool drawElField = { false };
