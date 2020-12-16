@@ -84,11 +84,8 @@ private:
     QCheckBox* showEqCB;
     QSlider* precisionEqPtS;
     QPushButton* clearStorageEqPtsBut;
-    //QLabel* precisionEqPtL;
 
-
-    //QPushButton* potMapBut;
-    
+    QCheckBox* showTrajectoriesCB;
     
 
     void testColorBut();

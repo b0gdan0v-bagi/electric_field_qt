@@ -43,6 +43,8 @@ void ScribbleArea::timerEvent(QTimerEvent* event)
 
 
 
+
+
 void ScribbleArea::updateShapes()
 {
     clearImage();
@@ -64,10 +66,14 @@ void ScribbleArea::updateShapes()
             break; }
         case sShape::ShapeType::MOVING_POINT: {
             drawRectangle(sh->vecNodes[0].pos.toPoint(), Qt::darkCyan); //draw start position
+            
+            sh->forceVec = summaryForceInPoint(*sh);
+
+            drawArrow(sh->movingPos, sh->forceVec); // vec of force
             if (sh->interactable) {
                 drawRectangle(sh->movingPos.toPoint(), sh->getColor()); // draw charge in it place
                 drawArrow(sh->movingPos, sh->forceVec); // vec of force
-                drawArrow(sh->movingPos, sh->speedVec, 10, 5, Qt::darkMagenta); // vec of force
+                drawArrow(sh->movingPos, sh->speedVec, 10, 5, Qt::darkMagenta); // vec of speed
             }
             drawArrow(sh->vecNodes[0].pos, sh->vecNodes[1].pos); break; }
         }
@@ -83,6 +89,8 @@ void ScribbleArea::updateShapes()
     if (drawPowerLines) drawAllPowerLines();
         
     if (drawElField) drawElFieldAllArea();
+
+    if (showTrajectories) drawTrajectoriesAllArea();
 
     //drawText(QPoint(50, 50), "N = " + QString::number(mouseInboundArea()));
     //drawText(QPoint(50, 100), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));

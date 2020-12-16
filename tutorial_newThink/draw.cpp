@@ -306,3 +306,8 @@ void ScribbleArea::drawToolTip(QMouseEvent* event)
     textToShow += "Field value = " + QString::number(fieldValue) + "\n";
     QToolTip::showText(event->globalPos(), textToShow, this, rect());
 }
+
+void ScribbleArea::drawTrajectoriesAllArea()
+{
+    for (auto &trj : trajectoryMap) drawLines(trj);
+}

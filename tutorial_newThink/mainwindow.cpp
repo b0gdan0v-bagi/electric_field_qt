@@ -67,7 +67,8 @@ MainWindow::MainWindow()
     precisionEqPtS->setValue(10);
     showEqCB = new QCheckBox("show equipotential " + QString::number(precisionEqPtS->value() * 0.001) + " %,  precision", this);
     clearStorageEqPtsBut = new QPushButton("clear points", this);
-    //precisionEqPtL = new QLabel(QString::number(precisionEqPtS->value()*0.001) + " %,  precision");
+   
+    showTrajectoriesCB = new QCheckBox("show trajectories ", this);
 
     drawPowerLinesCB = new QCheckBox("show power lines", this);
 
@@ -76,15 +77,6 @@ MainWindow::MainWindow()
     QHBoxLayout* hbox = new QHBoxLayout(testQW);
     QVBoxLayout* vbox1 = new QVBoxLayout();
 
-    
-    //controlsLayout->addWidget(crtScribbleBut, 0, 0,1,1);
-    //controlsLayout->addWidget(crtSingleBut, 1, 0);
-    //controlsLayout->addWidget(crtLineBut, 2, 0);
-    //controlsLayout->addWidget(dirBut, 3, 0);
-    
-    
-    // 5 free
-    
 
     controlsLayout->addWidget(chargeLabel, 0, 1);
     controlsLayout->addWidget(chargeLE, 0, 2, 1, 2);
@@ -93,7 +85,6 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(showEqCB, 1, 0);
     controlsLayout->addWidget(precisionEqPtS ,1,1,1,2);
     controlsLayout->addWidget(clearStorageEqPtsBut,1,4);
-    //controlsLayout->addWidget(precisionEqPtL, 8, 4);
 
     controlsLayout->addWidget(drawPotMapCB, 2, 0);
     controlsLayout->addWidget(drawPotMapS, 2, 1,1,2);
@@ -102,6 +93,7 @@ MainWindow::MainWindow()
     controlsLayout->addWidget(scaleOfDrawElFieldS,3,1,1,2);
 
     controlsLayout->addWidget(drawPowerLinesCB, 4, 0, 1, 1);
+    controlsLayout->addWidget(showTrajectoriesCB, 4, 1, 1, 1);
     
     controlsLayout->addWidget(sListWidget, 5, 0, 4, 3);
     controlsLayout->addWidget(deleteAllShapeBut, 9, 1);
@@ -109,21 +101,15 @@ MainWindow::MainWindow()
     
 
     vbox1->addWidget(scribbleArea);
-    //hbox->addWidget(sListWidget);
+
     hbox->addLayout(vbox1);
     hbox->addLayout(controlsLayout);
-    //hbox->addLayout(vbox3);
+
     connect(chargeLE, &QLineEdit::textChanged,this, [=]() {scribbleArea->chargeToAdd = chargeLE->text().toInt(); });
-    //connect(crtScribbleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setScribbleMode(); updateListWidget(); scribbleArea->setMouseTracking(true); });
-    //connect(crtSingleBut, &QPushButton::clicked, this, [=]() {scribbleArea->setSingleMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
-    //connect(crtLineBut, &QPushButton::clicked, this, [=]() {scribbleArea->setLineMode(); updateListWidget(); scribbleArea->setMouseTracking(true);  });
-    
-   
     connect(scribbleArea, &ScribbleArea::dataReady, this, [=]() {updateListWidget(); });
-    //connect(potMapBut, &QPushButton::clicked, this, [=]() {scribbleArea->calculatePotencial(); scribbleArea->setMouseTracking(false); });
-    
+ 
     connect(drawPowerLinesCB, &QCheckBox::clicked, this, [=]() {scribbleArea->drawPowerLines = drawPowerLinesCB->isChecked(); });
-    //connect(dirBut, &QPushButton::clicked, this, [=]() { scribbleArea->setDirectionsMode() ; scribbleArea->setMouseTracking(true); });
+ 
     connect(reverseChargeBut, &QPushButton::clicked, this, [=]() {chargeLE->setText(QString::number(chargeLE->text().toInt()*-1)); });
 
     connect(deleteShapeBut, &QPushButton::clicked, this, &MainWindow::deleteShape );
@@ -139,19 +125,18 @@ MainWindow::MainWindow()
     connect(precisionEqPtS, QOverload<int>::of(&QSlider::valueChanged), this, [=]() {scribbleArea->precisionFindEqPot = precisionEqPtS->value()*0.001f;  showEqCB->setText("show equipotential " + QString::number(precisionEqPtS->value() * 0.001) + " %,  precision"); });
     connect(clearStorageEqPtsBut, &QPushButton::clicked, this, [=]() {scribbleArea->storageEqPts.clear(); scribbleArea->updateShapes(); });
 
+    connect(showTrajectoriesCB, &QCheckBox::clicked, this, [=]() { scribbleArea->showTrajectories = showTrajectoriesCB->isChecked();});
 
-    //setLayout(hbox);
     setCentralWidget(testQW);
-    //setCentralWidget(hbox);
-    // Create actions and menus
+
     createActions();
     createMenus();
 
     // Set the title
-    setWindowTitle(tr("Scribble"));
+    setWindowTitle(tr("Modulating charges in electric field"));
 
     // Size the app
-    //resize(500, 500);
+    //resize(1000, 500);
 }
 
 // User tried to close the app

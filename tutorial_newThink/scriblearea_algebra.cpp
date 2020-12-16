@@ -67,29 +67,22 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool rever
 QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
 {
     QVector2D res;
-    float trueForceValue = 0;
+    //float trueForceValue = 0;
     float const koef = 1000.f; //debug, field ampf on screen
+    float mulCharge = 0;
     for (auto const& sh : shapes)
         switch (sh->shapeType)
         {
-            
         case sShape::ShapeType::POINT: {
             float radius = (sh->vecNodes[0].pos - curS.movingPos).length();
-            if (radius != 0)
-            {
-                res += plusFieldInPointByPoint(curS.movingPos, sh->vecNodes[0].pos, sh->charge);
-                trueForceValue += curS.charge * sh->charge / pow(radius / koef, 2);
-            }
+            if (radius != 0) res += plusForceInPointByPoint(curS.movingPos, sh->vecNodes[0].pos, sh->charge, curS.charge);
             break; }
         case sShape::ShapeType::LINE:
         {
             for (auto const pts : sh->allPoints)
             {
                 float radius = (*pts - curS.movingPos).length();
-                if (radius != 0) {
-                    trueForceValue += curS.charge * sh->chargePerPoint / pow(radius / koef, 2);
-                    res += plusFieldInPointByPoint(curS.movingPos, *pts, sh->chargePerPoint);
-                }
+                if (radius != 0) res += plusForceInPointByPoint(curS.movingPos, *pts, sh->chargePerPoint, curS.charge);
             }
             break;
         }
@@ -98,19 +91,14 @@ QVector2D ScribbleArea::summaryForceInPoint(const sShape& curS, bool reverse)
             if (sh->interactable && curS.vecNodes[0].pos != sh->vecNodes[0].pos)
             {
                 float radius = (sh->movingPos - curS.movingPos).length();
-                if (radius != 0)
-                {
-                    res += plusFieldInPointByPoint(curS.movingPos, sh->movingPos, sh->charge);
-                    trueForceValue += curS.charge * sh->charge / pow(radius / koef, 2);
-                }
+                if (radius != 0) res += plusForceInPointByPoint(curS.movingPos, sh->movingPos, sh->charge, curS.charge);
             }
             break; }
         }
-    trueForceValue /= 2.f;
+    //trueForceValue /= 2.f;
     if (res.length() == 0) return curS.movingPos;
-    if (reverse) res *= -trueForceValue / res.length();
-    else res *= trueForceValue / res.length();
-
+    //if (reverse) res *= -trueForceValue / res.length();
+    //else res *= trueForceValue / res.length();
 
     res += curS.movingPos;
     return res;
@@ -126,9 +114,30 @@ QVector2D ScribbleArea::plusFieldInPointByPoint(const QVector2D curPoint, const 
     {
         field = charge / pow(radius / koef, 2);
         if (field > 0) radiusVector *= (radius + field) / radius;
-        else radiusVector *= -1 * (radius - field) / radius;
+        else radiusVector *= -1.f * (radius - field) / radius;
     }
     return radiusVector;
+}
+
+QVector2D ScribbleArea::plusForceInPointByPoint(const QVector2D curPoint, const QVector2D chargePoint, const float curCharge, const float chargeCharge)
+{
+    QVector2D radiusVector = curPoint - chargePoint;
+    float radius = radiusVector.length();
+    if (radius == 0 || curCharge * chargeCharge == 0) return QVector2D();
+    float const koef = 1000.f;
+
+    float force = abs(curCharge) * abs(chargeCharge);
+    force = force / pow(radius / koef, 2);
+
+    radiusVector = radiusVector * (force / radius);
+
+    radiusVector /= 5;
+
+    return (curCharge * chargeCharge > 0) ? radiusVector : -1 * radiusVector;
+
+    //if (force > 0) radiusVector *= (radius + force) / radius;
+    //else radiusVector *= -1 * (radius - force) / radius;
+    //return radiusVector;
 }
 
 bool ScribbleArea::vecCrossChargeOrBorder(const QVector2D v, const int boundSize)
@@ -273,12 +282,16 @@ QVector2D ScribbleArea::inboundVector(QVector2D vectorToCheck, int boundSize)
 
 void ScribbleArea::startSimulateMovement()
 {
+    int index = 0;
     for (auto& sh : shapes)
+    {
         if (sh->shapeType == sShape::ShapeType::MOVING_POINT) {
             float testFloat = sh->movingPos.x();
             bool chargeSign = (sh->charge < 0) ? true : false;
             //sh->movingPos.setX(testFloat += 3);
-            
+
+            trajectoryMap[index].push_back(sh->movingPos);
+
             QVector2D tempPos = sh->movingPos;
 
             //sh->forceVec = summaryForceInPoint(*sh,chargeSign);
@@ -296,16 +309,16 @@ void ScribbleArea::startSimulateMovement()
             sh->forceVec += tempPos;
             //sh->speedVec += sh->forceVec-sh->movingPos;
 
-            
+
             sh->movingPos = sh->speedVec - sh->movingPos;
             sh->movingPos /= 30;
             sh->movingPos += tempPos;
             sh->speedVec = sh->speedVec - tempPos + sh->movingPos;
             sh->forceVec = sh->forceVec - tempPos + sh->movingPos;
-            
 
+            trajectoryMap[index].push_back(sh->movingPos);
             potShouldReCalc = true;
-            if (mChargeCrossChargeOrBorder(*sh,10)) sh->interactable = false;
+            if (mChargeCrossChargeOrBorder(*sh, 10)) sh->interactable = false;
             //{
                 //testFloat = sh->startPos
                 //sh->movingPos.setX(sh->vecNodes[0].pos.x());
@@ -313,6 +326,8 @@ void ScribbleArea::startSimulateMovement()
             //}
             //if (powerLineCrossChargeOrBorder(sh->vecNodes[0].pos)) return;
         }
+        index++;
+    }
     bool checkAlive = false;
     for (auto& sh : shapes)
         if (sh->shapeType == sShape::ShapeType::MOVING_POINT && sh->interactable) checkAlive = true;
@@ -324,6 +339,7 @@ void ScribbleArea::startSimulateMovement()
 void ScribbleArea::stopSimulateMovement()
 {
     //if (scribblemodes == SIMULATE) scribblemodes = TRACKING;
+    trajectoryMap.clear();
     bool shapesNeedUpdate = false;
     for (auto& sh : shapes)
         if (sh->shapeType == sShape::ShapeType::MOVING_POINT) {

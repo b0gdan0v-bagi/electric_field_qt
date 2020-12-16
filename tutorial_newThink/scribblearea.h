@@ -45,6 +45,11 @@ public:
 private:
     int nNodes;
     QVector2D tempPoint; // for line
+
+    QMap<int, QVector<QVector2D>> trajectoryMap;
+    void drawTrajectoriesAllArea();
+public:
+    bool showTrajectories = { false };
 public:
     
     enum ScribbleModes { NONE, LINE, POINT,MOVING_POINT, CYLINDER, TRACKING, EQPOTLINES, DIRECTIONS,SIMULATE } scribblemodes = NONE;
@@ -107,6 +112,7 @@ private:
     QVector2D summaryFieldInPoint(const QVector2D start, bool reverse = false);
     QVector2D plusFieldInPointByPoint(const QVector2D pos, const QVector2D chargePoint, const float charge);
     bool vecCrossChargeOrBorder(const QVector2D v, const int boundSize = 5);
+    QVector2D plusForceInPointByPoint(const QVector2D curPoint, const QVector2D chargePoint, const float curCharge, const float chargeCharge);
 
 signals:
     void dataReady(const QList<sShape*>& shapes_);
