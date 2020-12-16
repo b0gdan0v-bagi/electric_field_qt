@@ -14,8 +14,6 @@ QVector2D ScribbleArea::findIntersectLineNormal(QVector2D line_p1, QVector2D lin
     else return QVector2D((-C1 * B2 + B1 * C2) / det, (A2 * C1 - A1 * C2) / det); //inverse matrix * vector {-C1,-C2}
 }
 
-
-
 QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool reverse)
 {
     QVector2D res;
@@ -34,13 +32,14 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool rever
             break; }
         case sShape::ShapeType::LINE:
         {
-            for (auto const pts : sh->allPoints)
+            for (auto pts : sh->allPoints)
             {
                 float radius = (*pts - curPoint).length();
                 if (radius != 0) {
                     trueFieldValue += sh->chargePerPoint / pow(radius / koef, 2);
                     res += plusFieldInPointByPoint(curPoint, *pts, sh->chargePerPoint);
                 }
+                //pts += 3;
             }
             break;
         }
@@ -57,6 +56,7 @@ QVector2D ScribbleArea::summaryFieldInPoint(const QVector2D curPoint, bool rever
             }
             break; }
         }
+
     if (reverse) res *= -1.f / res.length();
     else res *= 1.f / res.length();
     
@@ -108,15 +108,18 @@ QVector2D ScribbleArea::plusFieldInPointByPoint(const QVector2D curPoint, const 
 {
     QVector2D radiusVector = curPoint - chargePoint;
     float radius = radiusVector.length();
+    if (radius == 0 || charge == 0) return QVector2D();
     float const koef = 1000.f; 
-    float field = 0;
-    if (radius != 0)
-    {
-        field = charge / pow(radius / koef, 2);
-        if (field > 0) radiusVector *= (radius + field) / radius;
-        else radiusVector *= -1.f * (radius - field) / radius;
-    }
-    return radiusVector;
+    float field = abs(charge) / pow(radius / koef, 2);
+        //field = charge / pow(radius / koef, 2);
+    radiusVector = radiusVector * (field / radius);
+    radiusVector /= field;
+
+    return (charge > 0) ? radiusVector : -1 * radiusVector;
+    //    if (field > 0) radiusVector *= (radius + field) / radius;
+     //   else radiusVector *= -1.f * (radius - field) / radius;
+    //
+   // return radiusVector;
 }
 
 QVector2D ScribbleArea::plusForceInPointByPoint(const QVector2D curPoint, const QVector2D chargePoint, const float curCharge, const float chargeCharge)
@@ -294,21 +297,15 @@ void ScribbleArea::startSimulateMovement()
 
             QVector2D tempPos = sh->movingPos;
 
-            //sh->forceVec = summaryForceInPoint(*sh,chargeSign);
             sh->forceVec = summaryForceInPoint(*sh);
             sh->speedVec -= tempPos;
             sh->forceVec -= tempPos;
-            //sh->forceVec *= sh->charge;
 
             sh->forceVec /= 3;
-
             sh->speedVec = sh->speedVec + sh->forceVec;
-
 
             sh->speedVec += tempPos;
             sh->forceVec += tempPos;
-            //sh->speedVec += sh->forceVec-sh->movingPos;
-
 
             sh->movingPos = sh->speedVec - sh->movingPos;
             sh->movingPos /= 30;
@@ -319,12 +316,6 @@ void ScribbleArea::startSimulateMovement()
             trajectoryMap[index].push_back(sh->movingPos);
             potShouldReCalc = true;
             if (mChargeCrossChargeOrBorder(*sh, 10)) sh->interactable = false;
-            //{
-                //testFloat = sh->startPos
-                //sh->movingPos.setX(sh->vecNodes[0].pos.x());
-                //return;
-            //}
-            //if (powerLineCrossChargeOrBorder(sh->vecNodes[0].pos)) return;
         }
         index++;
     }

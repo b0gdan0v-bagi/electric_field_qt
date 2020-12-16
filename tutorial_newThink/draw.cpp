@@ -64,7 +64,7 @@ void ScribbleArea::drawArrow(const QVector2D& fromPoint, const QVector2D& toPoin
     const float dx = toPoint.x() - fromPoint.x();
     const float dy = toPoint.y() - fromPoint.y();
     const auto length = std::sqrt(dx * dx + dy * dy);
-    if (head_length < 1 || length < head_length) return;
+    //if (head_length < 1 || length < head_length) return;
 
     // ux,uy is a unit vector parallel to the line.
     const auto ux = dx / length;

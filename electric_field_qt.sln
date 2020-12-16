@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "electric_field_qt", "electric_field_qt\electric_field_qt.vcxproj", "{06295C37-AE29-4669-AD8A-DCC20483661A}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tutorial_newThink", "tutorial_newThink\tutorial_newThink.vcxproj", "{4643A14C-0412-4242-A2E4-DC428E15EB61}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "electric_field_qt_main", "tutorial_newThink\tutorial_newThink.vcxproj", "{4643A14C-0412-4242-A2E4-DC428E15EB61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +11,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{06295C37-AE29-4669-AD8A-DCC20483661A}.Debug|x64.ActiveCfg = Debug|x64
-		{06295C37-AE29-4669-AD8A-DCC20483661A}.Debug|x64.Build.0 = Debug|x64
-		{06295C37-AE29-4669-AD8A-DCC20483661A}.Release|x64.ActiveCfg = Release|x64
-		{06295C37-AE29-4669-AD8A-DCC20483661A}.Release|x64.Build.0 = Release|x64
 		{4643A14C-0412-4242-A2E4-DC428E15EB61}.Debug|x64.ActiveCfg = Debug|x64
 		{4643A14C-0412-4242-A2E4-DC428E15EB61}.Debug|x64.Build.0 = Debug|x64
 		{4643A14C-0412-4242-A2E4-DC428E15EB61}.Release|x64.ActiveCfg = Release|x64
