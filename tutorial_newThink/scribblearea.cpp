@@ -78,23 +78,26 @@ void ScribbleArea::updateShapes()
             drawArrow(sh->vecNodes[0].pos, sh->vecNodes[1].pos); break; }
         }
     }
+    // if something changed potencial should be recalculated
     if (potShouldReCalc && drawPotMap) calculatePotencial();
+    // draw potencial heat map here
     if (!potShouldReCalc && drawPotMap) drawPotencialAllArea();
+    // draw eq pot lines. near mouse and every stored point
     if (drawEqPotLines)
     {
         calcEqPot(mousePoint);
         for (auto &pts : storageEqPts) calcEqPot(pts);
     }
-
+    
+    // draw powerlines near mouse or from/to charge
     if (drawPowerLines) drawAllPowerLines();
         
+    // draw electric field (lines)
     if (drawElField) drawElFieldAllArea();
 
+    // then in simulating mode it will store points where charges were before to show trajectories
     if (showTrajectories) drawTrajectoriesAllArea();
 
-    //drawText(QPoint(50, 50), "N = " + QString::number(mouseInboundArea()));
-    //drawText(QPoint(50, 100), "width = " + QString::number(width()) + "\nheight = " + QString::number(height()));
-    //drawText(QPoint(50, 150), "x = " + QString::number(mouseVector.x()) + "\ny = " + QString::number(mouseVector.y()));
 }
 
 
