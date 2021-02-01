@@ -122,7 +122,8 @@ void ScribbleArea::calcEqPot(QPoint& point)
     // calculatePotencial();
     QPainter painter(&image);
     painter.setPen(QPen(Qt::red, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    float potToFind = arrayOfPotencials[point.y()][point.x()];
+    //float potToFind = arrayOfPotencials[point.y()][point.x()];
+    float potToFind = pArrayPot[point.y()*fieldXsize+point.x()];
     for (int y = 0; y < height(); y++)
         for (int x = 0; x < width(); x++)
         {

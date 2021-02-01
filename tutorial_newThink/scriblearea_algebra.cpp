@@ -198,6 +198,7 @@ void ScribbleArea::calculatePotencial()
     minPot = 0;
     avgPot = 0;
     maxPot = 0;
+    /*
     for (int y = 0; y < height(); y += potScale)
     {
         //QVector<float> tempPot(width());
@@ -246,6 +247,9 @@ void ScribbleArea::calculatePotencial()
         }
         //arrayOfPotencials.push_back(tempPot);
     }
+    */
+
+    calculatePotencialThreadPool(100,100);
     avgPot /= (height() * width());
     potShouldReCalc = false;
 }

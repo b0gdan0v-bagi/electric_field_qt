@@ -20,7 +20,7 @@ ScribbleArea::ScribbleArea(QWidget* parent)
 
     //arrayOfPotencials.resize()
     temp_vector = QVector<float>(1920,0);
-    arrayOfPotencials = QVector<QVector<float>>(1080, temp_vector);
+    //arrayOfPotencials = QVector<QVector<float>>(1080, temp_vector);
 
     QTimer* TESTtimer = new QTimer(this);
     TESTtimer = new QTimer(this);
@@ -28,6 +28,14 @@ ScribbleArea::ScribbleArea(QWidget* parent)
     //TESTtimer->start(1000);
     TEST_timerId = QObject::startTimer(50);
 
+    //pArrayOfPotencials = &arrayOfPotencials;
+    pShapes = &shapes;
+    pPotScale = &potScale;
+
+    //pFractal = new int[ScreenWidth() * ScreenHeight()]{ 0 };
+    pArrayPot = new float[fieldYsize*fieldXsize]{ 0 };
+
+    initialiseThreadPool();
 }
 
 void ScribbleArea::timerEvent(QTimerEvent* event)
@@ -97,7 +105,11 @@ void ScribbleArea::updateShapes()
 
     // then in simulating mode it will store points where charges were before to show trajectories
     if (showTrajectories) drawTrajectoriesAllArea();
-
+        
+    QString abraCADABRA;
+    for (int i = 0; i < 16; i++)
+        abraCADABRA += QString::number(pArrayPot[i]) + " ";
+    drawText(QPoint(50, 50), abraCADABRA);
 }
 
 

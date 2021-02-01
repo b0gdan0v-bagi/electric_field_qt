@@ -15,6 +15,14 @@
 #include <algorithm>
 #include "qdebug.h"
 
+#include <condition_variable>
+#include <atomic>
+#include <complex>
+#include <cstdlib>
+#include <immintrin.h>
+#include <thread>
+
+constexpr int nMaxThreads = 32;
 
 
 class ScribbleArea : public QWidget, public QObject
@@ -99,7 +107,9 @@ private:
     QColor floatToRgb(float minValue, float maxValue, float value);
     //QVector<QVector<float>> arrayOfPotencials;
     QVector<float> temp_vector;
-    QVector<QVector<float>> arrayOfPotencials;
+    //QVector<QVector<float>> arrayOfPotencials;
+    const int fieldYsize = 1080;
+    const int fieldXsize = 1920;
     float minPot;
     float avgPot;
     float maxPot;
@@ -174,6 +184,184 @@ private:
 
     // Stores the location at the current mouse event
     QPoint lastPoint;
+
+    // thread pool here (my tests)
+public:
+
+    //QVector<QVector<float>>* pArrayOfPotencials = nullptr;
+    QList<sShape*>* pShapes = nullptr;
+    int* pPotScale = nullptr;
+    float* pArrayPot = new float[32]{ 0 };
+
+    struct WorkerThread
+    {
+        int left_x = 0;
+        int right_x = 0;
+        int right_y = 0;
+       
+
+        std::condition_variable cvStart;\
+        bool alive = true;
+        std::mutex mux;
+        int screen_width = 0;
+        //QVector<QVector<float>>* pArrayOfPotencials = nullptr;
+        QList<sShape*>* pShapes = nullptr;
+        int* pPotScale = nullptr;
+
+        float* arrayPot = nullptr;
+
+        //int* fractal = nullptr;
+
+        std::thread thread;
+
+        void start(const int LEFT_X, const int RIGHT_X, const int RIGHT_Y)
+        {
+            left_x = LEFT_X;
+            right_x = RIGHT_X;
+            right_y = RIGHT_Y;
+
+
+            //pArrayOfPotencials = & POTENCIAL;
+
+            std::unique_lock<std::mutex> lm(mux);
+            cvStart.notify_one();
+        }
+
+        void calculatePotencial()
+        {
+            while (alive)
+            {
+                std::unique_lock<std::mutex> lm(mux);
+                cvStart.wait(lm);
+                arrayPot[left_x] += left_x;
+                //(*pArrayOfPotencials)[0][0] = 1.f;
+                /*
+                float radius;
+                float minPot = 0;
+                float avgPot = 0;
+                float maxPot = 0;
+                for (int y = 0; y < right_y; y += *pPotScale)
+
+                {
+                    //QVector<float> tempPot(width());
+                    for (int x = left_x; x < right_x; x += *pPotScale)
+                    {
+                        //tempPot[x] = 0;
+                        
+                        (*pArrayOfPotencials)[y][x] = 0.f;
+                        for (auto const& sh : *pShapes) {
+                            switch (sh->shapeType)
+                            {
+                            case sShape::ShapeType::POINT:
+                            {
+                                radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
+                                //if (radius > 3) tempPot[x] += (sh->charge / radius); break;
+                                if (radius > 3) (*pArrayOfPotencials)[y][x] += (sh->charge / radius); break;
+                            }
+                            case sShape::ShapeType::LINE:
+                            {
+                                for (auto const& pts : sh->allPoints)
+                                {
+                                    radius = QVector2D(x, y).distanceToPoint(*pts);
+                                    //if (radius > 3) tempPot[x] += sh->charge / (radius * sh->allPoints.size());
+                                    if (radius > 3) (*pArrayOfPotencials)[y][x] += sh->charge / (radius * sh->allPoints.size());
+                                }
+                                break;
+                            }
+                            case sShape::ShapeType::MOVING_POINT:
+                            {
+                                if (sh->interactable)
+                                {
+                                    radius = QVector2D(x, y).distanceToPoint(sh->movingPos);
+                                    ///if (radius > 3) tempPot[x] += (sh->charge / radius); break;
+                                    if (radius > 3) (*pArrayOfPotencials)[y][x] += (sh->charge / radius);
+                                }
+                                break;
+                            }
+                            }
+
+                        }
+                        //if (tempPot[x] > maxPot) maxPot = tempPot[x];
+                        //if (tempPot[x] < minPot) minPot = tempPot[x];
+                        //avgPot += tempPot[x];
+                        //if ((*pArrayOfPotencials)[y][x] > maxPot) maxPot = (*pArrayOfPotencials)[y][x];
+                        //if ((*pArrayOfPotencials)[y][x] < minPot) minPot = (*pArrayOfPotencials)[y][x];
+                        //avgPot += (*pArrayOfPotencials)[y][x];
+                    }
+                    //arrayOfPotencials.push_back(tempPot);
+                }
+                */
+                nWorkerComplete++;
+            }
+        }
+    };
+
+    bool destroyPool()
+    {
+        for (int i = 0; i < nMaxThreads; i++)
+        {
+            workers[i].alive = false;		 // Allow thread exit
+            workers[i].cvStart.notify_one(); // Fake starting gun
+        }
+
+        // Clean up worker threads
+        for (int i = 0; i < nMaxThreads; i++)
+            workers[i].thread.join();
+
+        return true;
+    }
+
+    WorkerThread workers[nMaxThreads];
+    static std::atomic<int> nWorkerComplete;
+
+    void initialiseThreadPool()
+    {
+        for (int i = 0; i < nMaxThreads; i++)
+        {
+            workers[i].alive = true;
+            //workers[i].pArrayOfPotencials = pArrayOfPotencials;
+            workers[i].pShapes = pShapes;
+            workers[i].pPotScale = pPotScale;
+
+            workers[i].arrayPot = pArrayPot;
+
+            //workers[i].screen_width = ScreenWidth();
+            workers[i].thread = std::thread(&WorkerThread::calculatePotencial, &workers[i]);
+        }
+    }
+
+
+    void calculatePotencialThreadPool(const int width, const int height)
+    {
+        int nSectionWidth = width / nMaxThreads;
+        //double dFractalWidth = (frac_br.x - frac_tl.x) / double(nMaxThreads);
+        nWorkerComplete = 0;
+
+        for (size_t i = 0; i < nMaxThreads; i++)
+            workers[i].start(
+               // nSectionWidth * i,
+               // nSectionWidth * (i+1),
+              //  height
+                i, // test
+                i,
+                i
+                //QVector2D(50 * (i + 1), height)
+
+            );
+        //QMessageBox hello;
+        //hello.setText("hello");
+        //hello.exec();
+
+
+        while (nWorkerComplete < nMaxThreads) // Wait for all workers to complete
+        {
+        }
+    }
+
+
+
 };
+
+
 
 #endif

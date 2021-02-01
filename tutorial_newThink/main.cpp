@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+std::atomic<int> ScribbleArea::nWorkerComplete = 0;
+
 int main(int argc, char* argv[])
 {
     // The main application
