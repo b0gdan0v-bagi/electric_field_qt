@@ -214,13 +214,13 @@ public:
 
         std::thread thread;
 
-        void start(const int LEFT_X, const int RIGHT_X, const int RIGHT_Y)
+        void start(const int LEFT_X, const int RIGHT_X, const int RIGHT_Y, const int SCREEN_WIDTH)
         {
             left_x = LEFT_X;
             right_x = RIGHT_X;
             right_y = RIGHT_Y;
 
-
+            screen_width = SCREEN_WIDTH;
             //pArrayOfPotencials = & POTENCIAL;
 
             std::unique_lock<std::mutex> lm(mux);
@@ -233,9 +233,9 @@ public:
             {
                 std::unique_lock<std::mutex> lm(mux);
                 cvStart.wait(lm);
-                arrayPot[left_x] += left_x;
+                //arrayPot[left_x] += left_x;
                 //(*pArrayOfPotencials)[0][0] = 1.f;
-                /*
+                
                 float radius;
                 float minPot = 0;
                 float avgPot = 0;
@@ -248,7 +248,7 @@ public:
                     {
                         //tempPot[x] = 0;
                         
-                        (*pArrayOfPotencials)[y][x] = 0.f;
+                        arrayPot[y*screen_width+x] = 0.f;
                         for (auto const& sh : *pShapes) {
                             switch (sh->shapeType)
                             {
@@ -256,7 +256,7 @@ public:
                             {
                                 radius = QVector2D(x, y).distanceToPoint(sh->vecNodes[0].pos);
                                 //if (radius > 3) tempPot[x] += (sh->charge / radius); break;
-                                if (radius > 3) (*pArrayOfPotencials)[y][x] += (sh->charge / radius); break;
+                                if (radius > 3) arrayPot[y*screen_width+x] += (sh->charge / radius); break;
                             }
                             case sShape::ShapeType::LINE:
                             {
@@ -264,7 +264,7 @@ public:
                                 {
                                     radius = QVector2D(x, y).distanceToPoint(*pts);
                                     //if (radius > 3) tempPot[x] += sh->charge / (radius * sh->allPoints.size());
-                                    if (radius > 3) (*pArrayOfPotencials)[y][x] += sh->charge / (radius * sh->allPoints.size());
+                                    if (radius > 3) arrayPot[y*screen_width+x] += sh->charge / (radius * sh->allPoints.size());
                                 }
                                 break;
                             }
@@ -274,7 +274,7 @@ public:
                                 {
                                     radius = QVector2D(x, y).distanceToPoint(sh->movingPos);
                                     ///if (radius > 3) tempPot[x] += (sh->charge / radius); break;
-                                    if (radius > 3) (*pArrayOfPotencials)[y][x] += (sh->charge / radius);
+                                    if (radius > 3) arrayPot[y*screen_width+x] += (sh->charge / radius);
                                 }
                                 break;
                             }
@@ -290,7 +290,7 @@ public:
                     }
                     //arrayOfPotencials.push_back(tempPot);
                 }
-                */
+                
                 nWorkerComplete++;
             }
         }
@@ -338,19 +338,22 @@ public:
         nWorkerComplete = 0;
 
         for (size_t i = 0; i < nMaxThreads; i++)
-            workers[i].start(
-               // nSectionWidth * i,
-               // nSectionWidth * (i+1),
-              //  height
-                i, // test
-                i,
-                i
-                //QVector2D(50 * (i + 1), height)
+                workers[i].start(
+                    nSectionWidth * i,
+                    nSectionWidth * (i + 1),
+                    fieldYsize,
+                    fieldXsize
 
-            );
-        //QMessageBox hello;
-        //hello.setText("hello");
-        //hello.exec();
+                    //  height
+                    //  i, // test
+                    //  i,
+                    //  i
+                      //QVector2D(50 * (i + 1), height)
+
+                );
+                //QMessageBox hello;
+                //hello.setText("hello");
+                //hello.exec();
 
 
         while (nWorkerComplete < nMaxThreads) // Wait for all workers to complete

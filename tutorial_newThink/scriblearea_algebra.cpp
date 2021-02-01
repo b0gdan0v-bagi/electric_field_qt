@@ -249,7 +249,7 @@ void ScribbleArea::calculatePotencial()
     }
     */
 
-    calculatePotencialThreadPool(100,100);
+    calculatePotencialThreadPool(width(),height());
     avgPot /= (height() * width());
     potShouldReCalc = false;
 }

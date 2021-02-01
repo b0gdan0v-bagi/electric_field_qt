@@ -128,15 +128,15 @@ void ScribbleArea::calcEqPot(QPoint& point)
         for (int x = 0; x < width(); x++)
         {
             if (potToFind > 0) {
-                if (arrayOfPotencials[y][x] <= potToFind * (1 + precisionFindEqPot)
-                    && arrayOfPotencials[y][x] >= potToFind * (1 - precisionFindEqPot))
+                if (pArrayPot[point.y()*fieldXsize+point.x()] <= potToFind * (1 + precisionFindEqPot)
+                    && pArrayPot[point.y()*fieldXsize+point.x()] >= potToFind * (1 - precisionFindEqPot))
                 {
                     painter.drawPoint(x, y);
                 }
             }
             else {
-                if (arrayOfPotencials[y][x] >= potToFind * (1 + precisionFindEqPot)
-                    && arrayOfPotencials[y][x] <= potToFind * (1 - precisionFindEqPot))
+                if (pArrayPot[point.y()*fieldXsize+point.x()] >= potToFind * (1 + precisionFindEqPot)
+                    && pArrayPot[point.y()*fieldXsize+point.x()] <= potToFind * (1 - precisionFindEqPot))
                 {
                     painter.drawPoint(x, y);
                 }
@@ -191,12 +191,21 @@ void ScribbleArea::drawPotencialAllArea()
 {
     QPainter painter(&image);
     float const maxV = 255;
+    minPot = 0;
+    maxPot = 0;
+    //avgPot = 0;
+    for (int i = 0; i < fieldXsize * fieldYsize; i++)
+    {
+        if (pArrayPot[i] > maxPot) maxPot = pArrayPot[i];
+        if (pArrayPot[i] < minPot) minPot = pArrayPot[i];
+    }
+
     for (int y = 0; y < height(); y+=potScale)
     {
         for (int x = 0; x < width(); x+=potScale)
         {
-            float normalizedPot = (arrayOfPotencials[y][x] - minPot) / (maxPot - minPot);
-            QColor colorHeatMap = floatToRgb(minPot, maxPot, arrayOfPotencials[y][x]);
+            float normalizedPot = (pArrayPot[y*fieldXsize+x] - minPot) / (maxPot - minPot);
+            QColor colorHeatMap = floatToRgb(minPot, maxPot, pArrayPot[y*fieldXsize+x]);
             painter.setPen(QPen(
                 colorHeatMap,
                 potScale, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -303,7 +312,8 @@ void ScribbleArea::drawToolTip(QMouseEvent* event)
         shapeNumber++;
     }
     if (potShouldReCalc) calculatePotencial();
-    textToShow += "potencial = " + QString::number(arrayOfPotencials[event->pos().y()][event->pos().x()]) + "\n";
+    //textToShow += "potencial = " + QString::number(arrayOfPotencials[event->pos().y()][event->pos().x()]) + "\n";
+    textToShow += "potencial = " + QString::number(pArrayPot[event->pos().y() * fieldXsize + event->pos().x()]) + "\n";
     textToShow += "Field value = " + QString::number(fieldValue) + "\n";
     QToolTip::showText(event->globalPos(), textToShow, this, rect());
 }
